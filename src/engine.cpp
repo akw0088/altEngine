@@ -921,6 +921,7 @@ void Engine::load(char *level)
 	menu.render(global);
 	gfx.swap();
 
+
 	if (hl == false)
 	{
 		q3map.load_textures(gfx, surface_list, pk3_list, num_pk3, menu.data.anisotropic);

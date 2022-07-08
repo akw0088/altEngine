@@ -66,6 +66,9 @@ EntRigidBody::EntRigidBody(Entity *entity)
 	translational_friction = 0.99f;
 
 
+	skin_depth = 0.25f;
+
+
 	train.escort = true;
 	train.speed = 8.5f;
 	train.wait = 100;
@@ -293,26 +296,20 @@ bool EntRigidBody::collision_detect(plane_t &p)
 		// convert point back to radius from center
 		point = point + center;
 
-		impact = i + 1;
-		impact_point = point;
-		impact_center = center;
-		float t;
-		if (intersect_two_points_plane(p, center, point, impact_depth, t) == false)
-		{
-			impact_depth = center;
-		}
-
 		float d = point * p.normal + p.d;
 
-		if ( d < -0.25f )
+		if ( d < -skin_depth )
 		{
 			// Simulated too far
+			impact.too_far = true;
 			return true;
 		}
-		else if ( d < 0.0f )
+		else if ( d < skin_depth )
 		{
 			// Colliding
 			// To handle multiple collision we need to store temp velocities
+
+			impact.collision = true;
 
 			// convert rotated point back to local coordinates
 			point = point - entity->position;
@@ -320,15 +317,15 @@ bool EntRigidBody::collision_detect(plane_t &p)
 			// convert point back to radius from center
 			point = point + center;
 
-			impact = i + 1;
-			impact_point = point;
-			impact_center = center;
-			float t;
-			if (intersect_two_points_plane(p, center, point, impact_depth, t) == false)
-			{
-				impact_depth = center;
-			}
 
+			impact.impact_index = i + 1;
+			impact.impact_point = point;
+			impact.impact_center = center;
+
+			if (intersect_two_points_plane(p, center, point, impact.impact_vector, impact.t) == false)
+			{
+				impact.collision = true;
+			}
 
 			// convert to meters
 			point = point * (1.0f / UNITS_TO_METERS);
@@ -341,6 +338,11 @@ bool EntRigidBody::collision_detect(plane_t &p)
 			entity->position = old_position + p.normal * 0.05f; // move the body slightly away from the plane so we dont stick
 			morientation = old_orientation;
 
+		}
+		else
+		{
+			impact.collision = false;
+			impact.too_far = false;
 		}
 	}
 	return false;

@@ -28,6 +28,23 @@ typedef struct
 	float path_min_dist;
 } train_t;
 
+
+
+typedef struct
+{
+	bool			collision;		// bool if impact occurred
+	bool			too_far;		// bool if we went past skin_depth into object
+	vec3			impact_point;	// impacting point
+	vec3			impact_center;	// center of mass at time of impact
+	vec3			impact_vector;	// impact point vector to current position
+	int				impact_index;	// index into aabb that collision occurred on
+
+	float			depth;			// impact depth as float
+	vec3			impact_normal;	// impact surface normal
+
+	float			t;				// impact ray interpolated t
+} collision_info_t;
+
 class EntRigidBody : public EntModel
 {
 public:
@@ -92,12 +109,6 @@ public:
 	unsigned int	bounce;
 
 
-	int				impact;
-	vec3			impact_point;
-	vec3			impact_center;
-	vec3			impact_depth;
-
-
 	struct flag
 	{
 		unsigned short int on_ground : 1,
@@ -145,6 +156,14 @@ public:
 
 	func_path_t path;
 	pid_state_t pid;
+
+
+
+	float			skin_depth;
+
+
+	collision_info_t impact;
+
 };
 
 #endif

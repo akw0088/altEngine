@@ -215,7 +215,6 @@ private:
 public:
 	int width, height;
 	gpustat_t gpustat;
-	Raster raster;
 #ifdef _WIN32
 	HWND	hwnd;
 	HDC	hdc;
@@ -228,6 +227,8 @@ public:
 #endif
 #endif
 #ifdef SOFTWARE
+	Raster raster;
+
 	#ifdef WIN32
 	HDC	hdcMem;
 	HBITMAP	hBitmap;
@@ -248,7 +249,7 @@ public:
 	unsigned int	*pixels;
 	int clip_enabled;
 #ifdef THREAD
-	int	*pixel[16];
+	unsigned int	*pixel[16];
 	float *zbuff[16];
 #endif
 	float *zbuffer;

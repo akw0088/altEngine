@@ -20,9 +20,9 @@
 #endif
 
 #ifdef SOFTWARE
-#define RAYTRACE
+//#define RAYTRACE
 
-// used to be a raytrace function, but, perhaps not surprisingly, it was very, very, slow. Think it got moved into raytrace.cpp then later deleted due to lack of testing
+// used to be a raytrace function, but, perhaps not surprisingly, it was very, very, slow, definitely works on a single triangle, never have seen the entire scene, might have bugs
 bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int num_index, int width, int height, unsigned int *pixel, raytrace::light_t *light, int num_light, matrix4 &mvp);
 
 
@@ -43,7 +43,7 @@ extern int raster_target;
 typedef struct
 {
 	raster_t type;
-	int *pixels;
+	unsigned int *pixels;
 	float *zbuffer;
 	int width;
 	int height;
@@ -57,6 +57,7 @@ typedef struct
 	int num_index;
 	int num_vert;
 	int clip_enabled;
+	Raster *raster;
 } param_t;
 
 #define MAX_JOB 8192
@@ -93,7 +94,7 @@ RTYPE WINAPI thread1(void *num)
 
 		if (work1[i].param[next].type == BARYCENTRIC || work1[i].param[next].type == SPAN)
 		{
-			raster_triangles(
+			work1[i].param[next].raster->raster_triangles(
 				work1[i].param[next].type,
 				i,
 				work1[i].param[next].pixels,
@@ -113,7 +114,7 @@ RTYPE WINAPI thread1(void *num)
 		}
 		else if (work1[i].param[next].type == BARYCENTRIC_STRIP)
 		{
-			raster_triangles_strip(
+			work1[i].param[next].raster->raster_triangles_strip(
 				work1[i].param[next].type,
 				i,
 				work1[i].param[next].pixels,
@@ -154,7 +155,7 @@ void Graphics::resize(int width, int height)
 	{
 //		if (pixel[i])
 //			delete[] pixel[i];
-		pixel[i] = new int[(width * height) * sizeof(int) + 256];
+		pixel[i] = new unsigned int[(width * height) * sizeof(int) + 256];
 		zbuff[i] = new float[(width * height) * sizeof(float) + 256];
 	}
 #endif
