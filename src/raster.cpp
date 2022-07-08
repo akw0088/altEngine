@@ -935,7 +935,7 @@ void Raster::raster_triangles(const raster_t type, const int block, unsigned int
 				}
 				else if (type == HALFSPACE)
 				{
-					halfspace_triangle_fast(pixels, zbuffer, width, height, tri[j + 0], tri[j + 1], tri[j + 2]);
+					halfspace_triangle(pixels, zbuffer, width, height, tri[j + 0], tri[j + 1], tri[j + 2]);
 				}
 			}
 #ifdef WIN32
@@ -2479,7 +2479,7 @@ void Raster::clip2d_sutherland_hodgman(int width, int height, vec4 *points, int 
 	clip_line(points, num_point, width, 0, 0, 0);
 }
 
-void Raster::halfspace_triangle(unsigned int *pixels, float *zbuffer, int width, int height, const vec2 &v1, const vec2 &v2, const vec2 &v3)
+void Raster::halfspace_triangle(unsigned int *pixels, float *zbuffer, int width, int height, const vec3 &v1, const vec3 &v2, const vec3 &v3)
 {
 	float y1 = v1.y;
 	float y2 = v2.y;
@@ -2489,16 +2489,32 @@ void Raster::halfspace_triangle(unsigned int *pixels, float *zbuffer, int width,
 	float x3 = v3.x;
 
 	// Bounding rectangle
-	int maxx = imax((int)x1, imax((int)x2, (int)x3));
-	int minx = imin((int)x1, imin((int)x2, (int)x3));
-	int maxy = imax((int)y1, imax((int)y2, (int)y3));
-	int miny = imin((int)y1, imin((int)y2, (int)y3));
+	int max_x = imax((int)x1, imax((int)x2, (int)x3));
+	int min_x = imin((int)x1, imin((int)x2, (int)x3));
+	int max_y = imax((int)y1, imax((int)y2, (int)y3));
+	int min_y = imin((int)y1, imin((int)y2, (int)y3));
+
+
+
+	min_x = imax(min_x, 0);
+	max_x = imin(max_x, width);
+
+	min_y = imax(min_y, 0);
+	max_y = imin(max_y, height);
+
+
+	if (x1 >= max_x && x1 <= min_x && y1 >= max_y && y1 <= min_y &&
+		x2 >= max_x && x2 <= min_x && y2 >= max_y && y2 <= min_y &&
+		x3 >= max_x && x3 <= min_x && y3 >= max_y && y3 <= min_y)
+	{
+		return;
+	}
 
 
 	// Scan through bounding rectangle
-	for (int y = miny; y < maxy; y++)
+	for (int y = min_y; y < max_y; y++)
 	{
-		for (int x = minx; x < maxx; x++)
+		for (int x = min_x; x < max_x; x++)
 		{
 			// When all half-space functions positive, pixel is in triangle
 			if ((x1 - x2) * (y - y1) - (y1 - y2) * (x - x1) > 0 &&
@@ -2547,12 +2563,30 @@ void Raster::halfspace_triangle_fast(unsigned int *pixels, float *zbuffer, int w
 
 
 	// Bounding rectangle
-	int maxx = imax(X1, imax(X2, X3));
-	int minx = imin(X1, imin(X2, X3));
-	int maxy = imax(Y1, imax(Y2, Y3));
-	int miny = imin(Y1, imin(Y2, Y3));
+	int maxx = imax((int)X1, imax((int)X2, (int)X3));
+	int minx = imin((int)X1, imin((int)X2, (int)X3));
+	int maxy = imax((int)Y1, imax((int)Y2, (int)Y3));
+	int miny = imin((int)Y1, imin((int)Y2, (int)Y3));
 
 
+
+	minx = imax(minx, 0);
+	maxx = imin(maxx, width);
+
+	miny = imax(miny, 0);
+	maxy = imin(maxy, height);
+
+
+	if (X1 >= maxx && X1 <= minx && Y1 >= maxy && Y1 <= miny &&
+		X2 >= maxx && X2 <= minx && Y2 >= maxy && Y2 <= miny &&
+		X3 >= maxx && X3 <= minx && Y3 >= maxy && Y3 <= miny)
+	{
+		return;
+	}
+
+
+
+	// this function breaks scene up into small blocks and saves times by filling entire sub-blocks
 	minx = (minx + 0xF) >> 4;
 	maxx = (maxx + 0xF) >> 4;
 	miny = (miny + 0xF) >> 4;
@@ -2574,9 +2608,18 @@ void Raster::halfspace_triangle_fast(unsigned int *pixels, float *zbuffer, int w
 	int C3 = DY31 * X3 - DX31 * Y3;
 
 	// Correct for fill convention
-	if (DY12 < 0 || (DY12 == 0 && DX12 > 0)) C1++;
-	if (DY23 < 0 || (DY23 == 0 && DX23 > 0)) C2++;
-	if (DY31 < 0 || (DY31 == 0 && DX31 > 0)) C3++;
+	if (DY12 < 0 || (DY12 == 0 && DX12 > 0))
+	{
+		C1++;
+	}
+	if (DY23 < 0 || (DY23 == 0 && DX23 > 0))
+	{
+		C2++;
+	}
+	if (DY31 < 0 || (DY31 == 0 && DX31 > 0))
+	{
+		C3++;
+	}
 
 	// Loop through blocks
 	for (int y = miny; y < maxy; y += q)

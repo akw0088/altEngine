@@ -40,13 +40,20 @@ typedef enum {
 class Raster
 {
 public:
+
+	// takes a triangle array and feeds it to the selected triangle rendering algorithms (does 3d-to-clipspace transform, backface culling, clipping etc)
 	void raster_triangles(const raster_t type, const int block, unsigned int *pixels, float *zbuffer, const int width, const int height,
 		const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
 		const int start_index, const int start_vertex, const int num_index, const int num_verts, int clip);
 
+	// takes a triangle strip and feeds it to the selected triangle rendering algorithm (does 3d-to-clipspace transform, backface culling, clipping etc)
 	void raster_triangles_strip(const raster_t type, const int block, unsigned int *pixels, float *zbuffer, const int width, const int height,
 		const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
 		const int start_index, const int start_vertex, const int num_index, const int num_verts, int clip);
+
+
+	// main triangle render function for 3d, textures, z buffer, mip mapping, etc all works
+	// uses barycentric triangle tests, can definitely be optimized for speed
 	void barycentric_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, const texinfo_t *lightmap,
 		const int x1, const int y1, const float z1, const float w1, const int c1,
 		const int x2, const int y2, const float z2, const float w2, const int c2,
@@ -59,6 +66,11 @@ public:
 		const float lu3, const float lv3,
 		const int minx, const int maxx, const int miny, const int maxy, bool filter = false, bool trilinear = false, bool mipmap = true);
 
+	// 2D determinent can be used to determine winding order, used by barycentric_triangle
+	inline int det(int ax, int ay, int bx, int by);
+
+
+	// draws a triangle using xspans (top, triangle, bottom triangle, splitting) textures half work
 	void span_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture,
 		int x1, int y1, float z1, float w1, int c1,
 		int x2, int y2, float z2, float w2, int c2,
@@ -68,21 +80,59 @@ public:
 		float u3, float v3,
 		const int minx, const int maxx, const int miny, const int maxy);
 
+	// span_triangle sub-function draws a special case triangle with flat bottom
+	void fill_bottom_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
+		float u1, float v1,
+		float u2, float v2,
+		float u3, float v3, const int minx, const int maxx, const int miny, const int maxy);
 
-	void halfspace_triangle(unsigned int *pixels, float *zbuffer, int width, int height, const vec2 &v1, const vec2 &v2, const vec2 &v3);
-	void halfspace_triangle_fast(unsigned int *pixels, float *zbuffer, int width, int height, const vec3 &v1, const vec3 &v2, const vec3 &v3);
+	// span_triangle sub-function draws a special case triangle with flat top
+	void fill_top_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
+		float u1, float v1,
+		float u2, float v2,
+		float u3, float v3,
+		const int minx, const int maxx, const int miny, const int maxy);
 
-	void draw_pixel(unsigned int *pixels, float *zbuffer, int width, int height, int x, int y, float z, unsigned int color);
-	void draw_line(unsigned int *pixels, int width, int height, int x1, int y1, int x2, int y2, int color);
-	void flood_fill(unsigned int *pixels, int width, int height, int x, int y, int old_color, int new_color);
-	void draw_rect(unsigned int *pixels, int width, int height, float angle, int w, int l, int x, int y, int color);
-	void Rectangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, int y2);
-	void Triangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, int y2, int color);
-	void draw_text(unsigned int *vram, unsigned int *tex, char *msg, int x, int y, int xres, int yres);
-	void draw_circle(unsigned int *pixels, int width, int height, int xc, int yc, int radius, int color, int filled);
-	void draw_ellipse(unsigned int *pixels, int width, int height, int xc, int yc, int rx, int ry, int color, int filled);
+	// draws an xspan (horizontal line) using textures, z, buffer, windowing etc
 	void draw_xspan(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int z2, int color, float u1, float v1, float u2, float v2,
 		const int minx, const int maxx, const int miny, const int maxy);
+
+
+	// another triangle rendering algorithm (solid-color, no textures)
+	void halfspace_triangle(unsigned int *pixels, float *zbuffer, int width, int height, const vec3 &v1, const vec3 &v2, const vec3 &v3);
+
+
+	// optimized version of above, breaks scene into small blocks and fills those blocks (solid-color, no textures)
+	void halfspace_triangle_fast(unsigned int *pixels, float *zbuffer, int width, int height, const vec3 &v1, const vec3 &v2, const vec3 &v3);
+
+	// draws a pixel updating z buffer with it
+	void draw_pixel(unsigned int *pixels, float *zbuffer, int width, int height, int x, int y, float z, unsigned int color);
+
+
+	// basic 2D line drawing
+	void draw_line(unsigned int *pixels, int width, int height, int x1, int y1, int x2, int y2, int color);
+
+	// crappy flood fill algorithm
+	void flood_fill(unsigned int *pixels, int width, int height, int x, int y, int old_color, int new_color);
+
+	// draws a rectangle using line function with rotation
+	void draw_rect(unsigned int *pixels, int width, int height, float angle, int w, int l, int x, int y, int color);
+	
+	// draws a rectangle using line function no rotation
+	void Rectangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, int y2);
+
+	// draws a triangle using line function
+	void Triangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, int y2, int color);
+
+	// draws text from a bitmap atlas
+	void draw_text(unsigned int *vram, unsigned int *tex, char *msg, int x, int y, int xres, int yres);
+
+	// draws a circle non-filled
+	void draw_circle(unsigned int *pixels, int width, int height, int xc, int yc, int radius, int color, int filled);
+
+	// draws an ellipse non-filled
+	void draw_ellipse(unsigned int *pixels, int width, int height, int xc, int yc, int rx, int ry, int color, int filled);
+
 
 
 	// GDI functions to eventually make wrappers of
@@ -114,46 +164,65 @@ public:
 
 
 
-	void fill_bottom_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
-		float u1, float v1,
-		float u2, float v2,
-		float u3, float v3,	const int minx, const int maxx, const int miny, const int maxy);
 
-	void fill_top_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
-		float u1, float v1,
-		float u2, float v2,
-		float u3, float v3,
-		const int minx, const int maxx, const int miny, const int maxy);
+
+	// draws a single pixel using texture, mipmaps, filtering, blending etc
 	void render_pixel(unsigned int *pixels, float *zbuffer, const int width, const int height, int x, int y, float zi, const texinfo_t *texture, const texinfo_t *lightmap, bool mipmap, int mip_level, float u, float v, float blend, bool filter, bool trilinear);
 
 
+	// calculates mipmap level
 	void calculate_miplevel(const texinfo_t *texture, const float zi, int &mip_level, float &blend);
+
+	// Bi-linear filters for a single component texture (alpha channel only)
 	char bilinear_filter_1d(const unsigned char *tex, const int width, const int height, const float u, const float v, bool enable);
+
+	// Bi-linear filters for a three component texture (RGB)
 	rgb_t bilinear_filter_3d(const rgb_t *tex, const int width, const int height, const float u, const float v, bool enable);
+
+
+	// Bi-linear filters for a four component texture (RGBA)
 	rgba_t bilinear_filter_4d(const rgba_t *tex, const int width, const int height, const float u, const float v, bool enable);
 
+
+	// will triangulate a flat polygon using a single point fanning out to other points
 	void triangulate(vec4 *point, int &num_point); //triangle fan
+
+
+	// supposedly fast round function (truncates, subtracts, if delta greater than 0.5, add one) results in an int
 	int iround(float x);
+
+	// supposedly fast integer swap function (xor swap)
 	void iswap(int &a, int &b);
+
+	// supposedly fast integer min (xor tricks)
 	int imin(int x, int y);
+
+	// supposedly fast integer max (xor tricks)
 	int imax(int x, int y);
+
+
+	// supposedly fast integer clamp (uses above imax, imin)
 	void iclamp(int &a, int mi, int ma);
 
+
+	// clips triangle by a frustum planes, some code is commented out though
 	int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c,
 		vertex_t &d, vertex_t &e, vertex_t &f);
 
 
+	// clips triangle by viewport window, all integer based so must be raster points
 	void clip2d_sutherland_hodgman(int width, int height, vec4 *points, int &num_point);
+
+	// used by above for each edge
 	void clip_line(vec4 *points, int &num_point, int x1, int y1, int x2, int y2);
+
+	// used by above for each edge (integer only 2d-line intersection)
 	void line_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, float &xint, float &yint);
 
 
-
-
-	inline int det(int ax, int ay, int bx, int by);
-
-	bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int num_index, int width, int height, unsigned int *pixel, raytrace::light_t *light, int num_light, matrix4 &mvp);
-
 };
+
+
+
 
 #endif

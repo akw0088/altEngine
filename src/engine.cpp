@@ -3162,7 +3162,7 @@ void Engine::render_shadow_volumes(bool debug)
 						radmap.quadent.quadbrush[i].vert_array,
 						radmap.quadent.quadbrush[i].index_array,
 						radmap.quadent.quadbrush[i].num_index,
-						vec3(0.01, 1.0, 0.01));
+						vec3(0.01f, 10000.0f, 0.01f));
 				}
 
 				shadow[i].render(gfx, debug);

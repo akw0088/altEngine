@@ -42,7 +42,7 @@ float srgbEncode(float c)
 
 
 
-bool hitSphere(const ray_t &r, const sphere_t& s, float &t)
+bool hitSphere(const raytrace::ray_t &r, const raytrace::sphere_t& s, float &t)
 {
 	vec3 dist = s.pos - r.start;
 	float B = (r.dir.x * dist.x + r.dir.y * dist.y + r.dir.z * dist.z);
@@ -70,7 +70,7 @@ bool hitSphere(const ray_t &r, const sphere_t& s, float &t)
 }
 
 
-bool hitPlane(const ray_t &r, rplane_t &p, float &t)
+bool hitPlane(const raytrace::ray_t &r, rplane_t &p, float &t)
 {
 	float dot = p.n * r.dir;
 
@@ -85,7 +85,7 @@ bool hitPlane(const ray_t &r, rplane_t &p, float &t)
 }
 
 
-bool hitTriangle2(const ray_t &r, const triangle_t& p, float &t, int width, int height)
+bool hitTriangle2(const raytrace::ray_t &r, const raytrace::triangle_t& p, float &t, int width, int height)
 {
 	vec3 origin = r.start;
 	vec3 dir = r.dir;
@@ -117,12 +117,12 @@ bool hitTriangle2(const ray_t &r, const triangle_t& p, float &t, int width, int 
 		return false;
 }
 
-bool hitTriangle(const ray_t &ro, triangle_t &tri, float &t, int width, int height)
+bool hitTriangle(const raytrace::ray_t &ro, raytrace::triangle_t &tri, float &t, int width, int height)
 {
 	vec3 v0v1 = tri.b - tri.a;
 	vec3 v0v2 = tri.c - tri.a;
 
-	ray_t r = ro;
+	raytrace::ray_t r = ro;
 
 	r.start.x /= width;
 	r.start.y /= height;
@@ -184,7 +184,7 @@ bool hitTriangle(const ray_t &ro, triangle_t &tri, float &t, int width, int heig
 }
 
 
-color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_vert, int num_index, light_t *light, int num_light, int width, int height, matrix4 &mvp)
+color_t addRay(raytrace::ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_vert, int num_index, light_t *light, int num_light, int width, int height, matrix4 &mvp)
 {
 	color_t output = { 0.0f, 0.0f, 0.0f };
 	float coef = 1.0f;
@@ -202,7 +202,7 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 		// note this is done *PER PIXEL*, should definitely do a smaller windowing
 		for (int i = 0; i < num_index; i += 3)
 		{
-			triangle_t triangle;
+			raytrace::triangle_t triangle;
 			vec4 a, b, c;
 
 			// project to eye space
@@ -319,7 +319,7 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 		temp = 1.0f / sqrtf(temp);
 		vNormal = vNormal * temp;
 
-		ray_t lightRay;
+		raytrace::ray_t lightRay;
 		lightRay.start = ptHitPoint;
 
 		for (int j = 0; j < num_light; j++)
@@ -404,7 +404,7 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 	return output;
 }
 
-bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int num_index, int width, int height, int *pixel, light_t *light, int num_light, matrix4 &mvp)
+bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int num_index, int width, int height, unsigned int *pixel, light_t *light, int num_light, matrix4 &mvp)
 {
 #pragma omp parallel num_threads(64)
 	{
@@ -424,7 +424,7 @@ bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int
 				{
 					float sampleRatio = 1.0f;
 
-					ray_t viewRay = { { fragmentx, fragmenty, 1000.0f },
+					raytrace::ray_t viewRay = { { fragmentx, fragmenty, 1000.0f },
 					{ 0.0f, 0.0f, -1.0f } };
 					color_t temp = addRay(viewRay, vertex_array, index_array, num_vert, num_index, light, num_light, width, height, mvp);
 

@@ -20,6 +20,11 @@
 #endif
 
 #ifdef SOFTWARE
+#define RAYTRACE
+
+// used to be a raytrace function, but, perhaps not surprisingly, it was very, very, slow. Think it got moved into raytrace.cpp then later deleted due to lack of testing
+bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int num_index, int width, int height, unsigned int *pixel, raytrace::light_t *light, int num_light, matrix4 &mvp);
+
 
 matrix4 Graphics::current_mvp;
 extern int raster_target;
@@ -695,7 +700,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	light.intensity = vec3(1.0f, 1.0f, 1.0f);
 	render_raytrace(vertex_array[current_vbo], index_array[current_ibo], num_verts, num_index, width, height, pixels, &light, 1, current_mvp);
 #else
-	raster.raster_triangles(SPAN, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts, clip_enabled);
+	raster.raster_triangles(HALFSPACE, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts, clip_enabled);
 
 #endif
 #endif
