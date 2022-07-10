@@ -3157,16 +3157,18 @@ void Engine::render_shadow_volumes(bool debug)
 		{
 			//		if (i == debug_brush)
 			{
+				vec3 vLight(0.01f, 10000.0f, 0.01f);
+
 				if (update_shadow_volumes/* && keyboard.control == false*/)
 				{
 					shadow[i].CreateVolume(gfx,
 						radmap.quadent.quadbrush[i].vert_array,
 						radmap.quadent.quadbrush[i].index_array,
 						radmap.quadent.quadbrush[i].num_index,
-						vec3(0.01f, 10000.0f, 0.01f));
+						vLight);
 				}
 
-				shadow[i].render(gfx, debug);
+				shadow[i].render(gfx);
 
 				//			break;
 			}
