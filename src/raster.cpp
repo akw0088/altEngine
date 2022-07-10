@@ -12,6 +12,47 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
+
+///=============================================================================
+/// File: raster.cpp
+///=============================================================================
+/// This class performs software rendering/rasterization
+/// essentially if you can draw a single triangle, you can draw all the triangles
+///
+/// There are a few triangle rendering algorithms here
+///
+///		barycentric - main triangle algorithm, supports textures, mip mapping
+///
+///		scanline - top/bottom style with xspans, supports textures
+///  but they are not 100% correct (texture coordinates a bit off)
+///
+///		halfspace - So these variations came from discussions around the
+/// swift shader developer on some forum. They do not support textures
+/// currently, but will render a filled triangle
+///
+///		halfspace fast - a variation of the above that breaks filling
+/// into smaller blocks, idea being filling a block is faster than
+/// drawing spans. Will also render, but no textures etc
+///
+///		Raytrace - no textures, haven't tested this much past drawing a single
+/// triangle, very slow as there is no bounding volume acceleration structures
+///
+/// Assuming one day I fix the textures on scanline and get it to feature parity
+/// with the barycentric version, I hope to do what quake did regarding the 
+/// perspective correct texture mapping. Which is to say, dont do perspective
+/// correct texture mapping for every pixel. Just do it on the ends and if it
+/// spans 16 pixels, do it every 16 pixels with a linear interpolation between.
+/// Supposedly this helps pentium one do a FDIV in parallel. But that would mean
+/// I would have to do things integer only in the loop to prevent doing any
+/// other floating point operations near by
+///
+/// https://www.jagregory.com/abrash-black-book/#rasterization
+///
+///
+/// Accepts .map file
+/// outputs triangulated brushes
+///=============================================================================
+
 #include "raster.h"
 #include "common.h"
 #include <math.h> // for cos
@@ -23,6 +64,7 @@ int raster_tcount = 0;
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
 
 
 inline int Raster::imin(int x, int y)
@@ -288,23 +330,48 @@ int Raster::clip_planes(vertex_t &a, vertex_t &b, vertex_t &c,
 	return -1;
 }
 
+
+
+///=============================================================================
+/// Function: raster_triangles
+///=============================================================================
+/// Description: 
+///
+/// This function will loop through a integer indexed triangle buffer, perform
+/// transformations to move the triangle into 2d clip space, and then call the 
+/// selected triangle raster function.
+///
+/// Parameters:
+///		widht, height, and block can be used to render a subsection of the viewport
+/// which is used with openmp to multithread the rendering. Although single
+/// thread works fine too. Each thread has an entire viewport worth of memory
+/// to avoid false sharing (ie: if the memory accesses between threads can touch
+/// the same cache line, then they will deadlock each other
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::raster_triangles(const raster_t type, const int block, unsigned int *pixels, float *zbuffer, const int width, const int height,
 	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int start_index, const int start_vertex, const int num_index, const int num_verts, int clip)
 {
+
+	// ensure we are going to draw more than one pixel
 	if (width <= 1 || height <= 1)
 		return;
 
 
 	
-
+	// increment triangle count
 	raster_tcount++;
 
+	// some code to debug specific triangles
 	if (raster_tcount != raster_target && raster_enabled)
 	{
 		return;
 	}
 
+	// loop through the index buffer
 	for (int i = start_index; i < start_index + num_index; i += 3)
 	{
 		int num_point = 3;
@@ -312,6 +379,8 @@ void Raster::raster_triangles(const raster_t type, const int block, unsigned int
 		vec2 tri_uv[6];
 		vec2 tri_luv[6];
 		int start = 0;
+
+		// take a triangle, transform it, then clip it against the clip space planes
 
 		// transform model space to clip space
 		vec4 v1 = mvp * vec4(vertex_array[start_vertex + index_array[i]].position, 1.0f);
@@ -517,6 +586,9 @@ void Raster::raster_triangles(const raster_t type, const int block, unsigned int
 			tri[j + 2].y *= height - 1;
 		}
 
+
+		// now we have a good triangle that will fit on the viewport, feed it to the selected raster function
+		// big switch statement is for splitting the work into the 16 threads if they are enabled
 
 #ifdef WIN32
 		try {
@@ -949,6 +1021,17 @@ void Raster::raster_triangles(const raster_t type, const int block, unsigned int
 
 }
 
+///=============================================================================
+/// Function: raster_triangles_strip
+///=============================================================================
+/// Description: 
+///
+/// Same as raster_triangle, except we have a triangle strip 
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::raster_triangles_strip(const raster_t type, const int block, unsigned int *pixels, float *zbuffer, const int width, const int height,
 	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int start_index, const int start_vertex, const int num_index, const int num_verts, int clip)
@@ -1519,6 +1602,20 @@ void Raster::raster_triangles_strip(const raster_t type, const int block, unsign
 
 }
 
+
+
+///=============================================================================
+/// Function: draw_pixel
+///=============================================================================
+/// Description: 
+///
+/// Eessentially set_pixel() except we also write to the z buffer
+/// this function needs to be fast, so no branches here
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 inline void Raster::draw_pixel(unsigned int *pixels, float *zbuffer, int width, int height, int x, int y, float z, unsigned int color)
 {
 #ifdef THREAD
@@ -1531,6 +1628,20 @@ inline void Raster::draw_pixel(unsigned int *pixels, float *zbuffer, int width, 
 #endif
 }
 
+
+
+
+///=============================================================================
+/// Function: draw_line
+///=============================================================================
+/// Description: 
+///
+/// This is a 2d line drawing function, can be used for wireframe rendering
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::draw_line(unsigned int *pixels, int width, int height, int x1, int y1, int x2, int y2, int color)
 {
 	int i;
@@ -1621,6 +1732,18 @@ void Raster::draw_line(unsigned int *pixels, int width, int height, int x1, int 
 	}
 }
 
+
+///=============================================================================
+/// Function: flood_fill
+///=============================================================================
+/// Description: 
+///
+/// This is a crappy recursive flood fill function
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::flood_fill(unsigned int *pixels, int width, int height, int x, int y, int old_color, int new_color)
 {
 	if (x < width && x >= 0 && y < height && y >= 0 && pixels[x + y * width] != new_color)
@@ -1633,6 +1756,18 @@ void Raster::flood_fill(unsigned int *pixels, int width, int height, int x, int 
 	}
 }
 
+
+///=============================================================================
+/// Function: draw_rect
+///=============================================================================
+/// Description: 
+///
+/// This draws a rectangle, not filled
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::draw_rect(unsigned int *pixels, int width, int height, float angle, int w, int l, int x, int y, int color)
 {
 	float	corner[4][2];
@@ -1675,7 +1810,19 @@ void Raster::draw_rect(unsigned int *pixels, int width, int height, float angle,
 	draw_line(pixels, width, height, (int)corner[3][0], (int)corner[3][1], (int)corner[0][0], (int)corner[0][1], color);
 }
 
-// Windows GDI like syntax
+
+
+///=============================================================================
+/// Function: draw_rect
+///=============================================================================
+/// Description: 
+///
+/// This draws a rectangle, not filled, more closely resembles GDI Rectangle
+/// 
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::Rectangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, int y2)
 {
 	draw_line((unsigned int *)vram, xres, yres, x1, y1, x2, y1, 0); // top line
@@ -1685,6 +1832,18 @@ void Raster::Rectangle(unsigned int *vram, int xres, int yres, int x1, int y1, i
 	draw_line((unsigned int *)vram, xres, yres, x2, y1, x2, y2, 0); // right line
 }
 
+
+///=============================================================================
+/// Function: Triangle
+///=============================================================================
+/// Description: 
+///
+/// This draws a triangle, not filled, more closely resembles GDI Rectangle
+/// 
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::Triangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, int y2, int color)
 {
 	int half_x = abs(x2 - x1) / 2;
@@ -1694,6 +1853,20 @@ void Raster::Triangle(unsigned int *vram, int xres, int yres, int x1, int y1, in
 	draw_line((unsigned int *)vram, xres, yres, x2 - half_x, y1, x2, y2, color); // right line
 }
 
+
+
+///=============================================================================
+/// Function: draw_text
+///=============================================================================
+/// Description: 
+///
+/// This draws a bitmap text from a texture atlas 16x16 pixel characters
+/// 256x256 total size
+/// 
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::draw_text(unsigned int *vram, unsigned int *tex, char *msg, int x, int y, int xres, int yres)
 {
 	int x_shift = 0;
@@ -1730,6 +1903,18 @@ void Raster::draw_text(unsigned int *vram, unsigned int *tex, char *msg, int x, 
 }
 
 
+///=============================================================================
+/// Function: draw_circle
+///=============================================================================
+/// Description: 
+///
+/// This draws a a circle, probably need to test if it still works
+/// looks like it might do a filled circle too
+/// 
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::draw_circle(unsigned int *pixels, int width, int height, int xc, int yc, int radius, int color, int filled)
 {
 	int x = radius - 1;
@@ -1791,6 +1976,19 @@ void Raster::draw_circle(unsigned int *pixels, int width, int height, int xc, in
 }
 
 
+
+///=============================================================================
+/// Function: draw_ellipse
+///=============================================================================
+/// Description: 
+///
+/// This draws a a ellipse, probably need to test if it still works
+/// looks like it might do a filled circle too
+/// 
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::draw_ellipse(unsigned int *pixels, int width, int height, int xc, int yc, int rx, int ry, int color, int filled)
 {
 	int x, y, p;
@@ -1871,6 +2069,19 @@ void Raster::draw_ellipse(unsigned int *pixels, int width, int height, int xc, i
 }
 
 
+
+///=============================================================================
+/// Function: draw_xspan
+///=============================================================================
+/// Description: 
+///
+/// This is the xspan drawing function for the span triangle raster
+/// 
+/// Need to fix texture rendering, and perform the 16 pixel divide optimization
+///
+/// Returns:
+///		None
+///=============================================================================
 inline void Raster::draw_xspan(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int z2, int color, float u1, float v1, float u2, float v2,
 	const int minx, const int maxx, const int miny, const int maxy)
 {
@@ -1963,6 +2174,17 @@ inline void Raster::draw_xspan(unsigned int *pixels, float *zbuffer, const int w
 }
 
 
+///=============================================================================
+/// Function: fill_bottom_triangle
+///=============================================================================
+/// Description: 
+///
+/// This is the flat bottom handling code for the span triangle algorithm
+/// 
+///
+/// Returns:
+///		None
+///=============================================================================
 inline void Raster::fill_bottom_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
 	float u1, float v1,
 	float u2, float v2,
@@ -2018,6 +2240,17 @@ inline void Raster::fill_bottom_triangle(unsigned int *pixels, float *zbuffer, c
 }
 
 
+///=============================================================================
+/// Function: fill_top_triangle
+///=============================================================================
+/// Description: 
+///
+/// This is the flat top handling code for the span triangle algorithm
+/// 
+///
+/// Returns:
+///		None
+///=============================================================================
 inline void Raster::fill_top_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
 	float u1, float v1,
 	float u2, float v2,
@@ -2072,6 +2305,19 @@ inline void Raster::fill_top_triangle(unsigned int *pixels, float *zbuffer, cons
 	}
 }
 
+
+///=============================================================================
+/// Function: iswap
+///=============================================================================
+/// Description: 
+///
+/// This is an integer xor swap, supposedly faster for the frequent swapping
+/// or (x1,y1) (x2,y2) points to perserve moving with increasing memory addr
+/// 
+///
+/// Returns:
+///		None
+///=============================================================================
 inline void Raster::iswap(int &a, int &b)
 {
 	a ^= b;
@@ -2079,6 +2325,17 @@ inline void Raster::iswap(int &a, int &b)
 	a ^= b;
 }
 
+///=============================================================================
+/// Function: span_triangle
+///=============================================================================
+/// Description: 
+///
+/// Main span_triangle triangle raster function
+/// 
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::span_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture,
 	int x1, int y1, float z1, float w1, int c1,
 	int x2, int y2, float z2, float w2, int c2,
@@ -2154,12 +2411,38 @@ void Raster::span_triangle(unsigned int *pixels, float *zbuffer, const int width
 	}
 }
 
+
+///=============================================================================
+/// Function: det
+///=============================================================================
+/// Description: 
+///
+/// Calculate the 2d determinent, which is a signed area and can determine
+/// vertex winding and edge direction
+/// 
+///
+/// Returns:
+///		None
+///=============================================================================
 inline int Raster::det(int ax, int ay, int bx, int by)
 {
 	return ax * by - bx *  ay;
 }
 
-
+///=============================================================================
+/// Function: calculate_miplevel
+///=============================================================================
+/// Description: 
+///
+/// Determines which mip level we are at based on the z position
+/// the farther the triangle, you dont need a giant texture to sample from
+/// if you do sample full resolution you get super sharp textures that 
+/// shimmer a lot
+/// 
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::calculate_miplevel(const texinfo_t *texture, const float zi, int &mip_level, float &blend)
 {
 	float mip_range[7] = { 0.0f, 0.125f, 0.25f, 0.5f, 0.7f, 0.8f, 0.9f };
@@ -2212,6 +2495,17 @@ void Raster::calculate_miplevel(const texinfo_t *texture, const float zi, int &m
 }
 
 
+///=============================================================================
+/// Function: render_pixel
+///=============================================================================
+/// Description: 
+///
+/// This is essentially a set_pixel type function, but will handle texture filtering
+/// 
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::render_pixel(unsigned int *pixels, float *zbuffer, const int width, const int height, int x, int y, float zi, const texinfo_t *texture, const texinfo_t *lightmap, bool mipmap, int mip_level, float u, float v, float blend, bool filter, bool trilinear)
 {
 	if (texture->components == 1)
@@ -2269,6 +2563,24 @@ void Raster::render_pixel(unsigned int *pixels, float *zbuffer, const int width,
 
 }
 
+
+///=============================================================================
+/// Function: barycentric_triangle
+///=============================================================================
+/// Description: 
+///
+/// This is the current best triangle raster function, loops over bounding box
+/// of triangle then does barycentric determinant checks for each edge to 
+/// determine if the pixel is inside the triangle or not
+///
+/// Lot's of floating point operations regarding textures, which is definitely
+/// not ideal in terms of speed. But having it work correctly is step 1,
+/// speed comes second
+/// 
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::barycentric_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int x1, const int y1, const float z1, const float w1, const int c1,
 	const int x2, const int y2, const float z2, const float w2, const int c2,
@@ -2365,7 +2677,7 @@ void Raster::barycentric_triangle(unsigned int *pixels, float *zbuffer, const in
 			// if inside triangle
 			if ((s >= 0.0f) && (t >= 0.0f) && (b >= 0.0f))
 			{
-				float inverse_w = s * inverse_w2 + t * inverse_w3 + b * inverse_w1;
+				float inverse_w = (s * inverse_w2 + t * inverse_w3 + b * inverse_w1);
 				float w_interpolated = 1.0f / inverse_w;
 				float depth = w_interpolated * 0.0005f; // (1 / 2000.0f) == 0.0005f
 
@@ -2405,6 +2717,18 @@ void Raster::barycentric_triangle(unsigned int *pixels, float *zbuffer, const in
 }
 
 
+
+///=============================================================================
+/// Function: line_intersect
+///=============================================================================
+/// Description: 
+///
+/// This is 2D Line intersection code, used for 2d clipping of viewport
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::line_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, float &xint, float &yint)
 {
 	float num = (float)((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4));
@@ -2414,6 +2738,17 @@ void Raster::line_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int 
 	yint = num / den;
 }
 
+///=============================================================================
+/// Function: clip_line
+///=============================================================================
+/// Description: 
+///
+/// This is 2D Line clipping code, used for 2d clipping of viewport
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::clip_line(vec4 *points, int &num_point, int x1, int y1, int x2, int y2)
 {
 	vec4 out[32];
@@ -2471,6 +2806,18 @@ void Raster::clip_line(vec4 *points, int &num_point, int x1, int y1, int x2, int
 	}
 }
 
+
+///=============================================================================
+/// Function: clip2d_sutherland_hodgman
+///=============================================================================
+/// Description: 
+///
+/// This is 2D Line clipping code, used for 2d clipping of viewport
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::clip2d_sutherland_hodgman(int width, int height, vec4 *points, int &num_point)
 {
 	clip_line(points, num_point, 0, 0, 0, height);
@@ -2479,6 +2826,18 @@ void Raster::clip2d_sutherland_hodgman(int width, int height, vec4 *points, int 
 	clip_line(points, num_point, width, 0, 0, 0);
 }
 
+
+///=============================================================================
+/// Function: halfspace_triangle
+///=============================================================================
+/// Description: 
+///
+/// This is a triangle raster function, works, but no textures, just solid color
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::halfspace_triangle(unsigned int *pixels, float *zbuffer, int width, int height, const vec3 &v1, const vec3 &v2, const vec3 &v3)
 {
 	float y1 = v1.y;
@@ -2527,6 +2886,19 @@ void Raster::halfspace_triangle(unsigned int *pixels, float *zbuffer, int width,
 	}
 }
 
+
+///=============================================================================
+/// Function: iround
+///=============================================================================
+/// Description: 
+///
+/// This is a float to integer rounding function, just truncates, subtracts, and
+/// compares with 0.5
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 int Raster::iround(float x)
 {
 	int xi = (int)x;
@@ -2535,6 +2907,23 @@ int Raster::iround(float x)
 	return xi;
 }
 
+
+
+///=============================================================================
+/// Function: halfspace_triangle_fast
+///=============================================================================
+/// Description: 
+///
+/// This is a triangle raster function, works, but no textures, just solid color
+/// this one differs from the previous in that it breaks the triangle into blocks
+/// and can better fill those blocks if they happen to have no edges in them
+/// smaller triangles would make this higher overhead than larger triangles
+/// though, as the idea is you fill more blocks than the work to find them
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::halfspace_triangle_fast(unsigned int *pixels, float *zbuffer, int width, int height, const vec3 &v1, const vec3 &v2, const vec3 &v3)
 {
 	// 28.4 fixed-point coordinates
@@ -2702,6 +3091,19 @@ void Raster::halfspace_triangle_fast(unsigned int *pixels, float *zbuffer, int w
 
 
 
+///=============================================================================
+/// Function: triangulate
+///=============================================================================
+/// Description: 
+///
+/// This is a basic triangulation function for ordered points on a plane
+/// essentially makes a triangle fan, but requires they be clockwise/counterclock wise
+/// in order
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Raster::triangulate(vec4 *point, int &num_point)
 {
 	vec4 out[256];
@@ -2731,7 +3133,17 @@ void Raster::triangulate(vec4 *point, int &num_point)
 }
 
 
-
+///=============================================================================
+/// Function: bilinear_filter_1d
+///=============================================================================
+/// Description: 
+///
+/// This perform bilinear interpolation on a 8 bit texture (single channel)
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 char Raster::bilinear_filter_1d(const unsigned char *tex, const int width, const int height, const float u, const float v, bool enable)
 {
 	float mu = u - (int)u;
@@ -2781,6 +3193,17 @@ char Raster::bilinear_filter_1d(const unsigned char *tex, const int width, const
 }
 
 
+///=============================================================================
+/// Function: bilinear_filter_3d
+///=============================================================================
+/// Description: 
+///
+/// This perform bilinear interpolation on a RGB texture (three channel)
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 rgb_t Raster::bilinear_filter_3d(const rgb_t *tex, const int width, const int height, const float u, const float v, bool enable)
 {
 	float mu = u - (int)u;
@@ -2838,6 +3261,17 @@ rgb_t Raster::bilinear_filter_3d(const rgb_t *tex, const int width, const int he
 }
 
 
+///=============================================================================
+/// Function: bilinear_filter_4d
+///=============================================================================
+/// Description: 
+///
+/// This perform bilinear interpolation on a RGBA texture (four channel)
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 inline rgba_t Raster::bilinear_filter_4d(const rgba_t *tex, const int width, const int height, const float u, const float v, bool enable)
 {
 	float mu = u - (int)u;
