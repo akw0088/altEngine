@@ -49,8 +49,6 @@
 /// https://www.jagregory.com/abrash-black-book/#rasterization
 ///
 ///
-/// Accepts .map file
-/// outputs triangulated brushes
 ///=============================================================================
 
 #include "raster.h"
