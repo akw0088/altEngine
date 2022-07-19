@@ -1754,19 +1754,22 @@ inline void Raster::fill_bottom_triangle(unsigned int *pixels, float *zbuffer, c
 
 	// flat bottom y2 - y1 == y3 - y1
 
-	float invslope1 = (float)(x2 - x1) / (y3 - y1); // dx / dy
-	float invslope2 = (float)(x3 - x1) / (y3 - y1); // dx / dy
-	float cur_x1 = (float)x1;
-	float cur_x2 = (float)x1;
 
-	float uinvslope1 = (float)((u2 - u1)) / (y3 - y1); // du / dy
-	float uinvslope2 = (float)((u3 - u1)) / (y3 - y1); // du / dy
-	float cur_u1 = u1;
-	float cur_u2 = u1;
-	float vinvslope1 = (float)(v2 - v1) / (y3 - y1); // dv / dy
-	float vinvslope2 = (float)(v3 - v1) / (y3 - y1); // dv / dy
-	float cur_v1 = v1;
-	float cur_v2 = v1;
+	float yheight = (y3 - y1);
+
+	float dx_left = (float)(x2 - x1) / yheight; // dx / dy
+	float dx_right = (float)(x3 - x1) / yheight; // dx / dy
+	float xs = (float)x1;
+	float xe = (float)x1;
+
+	float du_left = (float)((u2 - u1)) / yheight; // du / dy
+	float du_right = (float)((u3 - u1)) / yheight; // du / dy
+	float us = u1;
+	float ue = u1;
+	float dv_left = (float)(v2 - v1) / yheight; // dv / dy
+	float dv_right = (float)(v3 - v1) / yheight; // dv / dy
+	float vs = v1;
+	float ve = v1;
 
 
 
@@ -1774,26 +1777,26 @@ inline void Raster::fill_bottom_triangle(unsigned int *pixels, float *zbuffer, c
 	{
 		if (y < miny || y >= maxy)
 		{
-			cur_x1 += invslope1;
-			cur_x2 += invslope2;
-			cur_u1 += uinvslope1;
-			cur_u2 += uinvslope2;
-			cur_v1 += vinvslope1;
-			cur_v2 += vinvslope2;
+			xs += dx_left;
+			xe += dx_right;
+			us += du_left;
+			ue += du_right;
+			vs += dv_left;
+			ve += dv_right;
 			continue;
 		}
 
 		draw_xspan(pixels, zbuffer, width, height, texture,
-			(int)cur_x1, y, z1, (int)cur_x2, z2, color,
-			cur_u1, cur_v1, cur_u2, cur_v2,
+			(int)xs, y, z1, (int)xe, z2, color,
+			us, vs, ue, ve,
 			minx, maxx, miny, maxy);
 
-		cur_x1 += invslope1;
-		cur_x2 += invslope2;
-		cur_u1 += uinvslope1;
-		cur_u2 += uinvslope2;
-		cur_v1 += vinvslope1;
-		cur_v2 += vinvslope2;
+		xs += dx_left;
+		xe += dx_right;
+		us += du_left;
+		ue += du_right;
+		vs += dv_left;
+		ve += dv_right;
 	}
 }
 
@@ -1819,46 +1822,46 @@ inline void Raster::fill_top_triangle(unsigned int *pixels, float *zbuffer, cons
 		return;
 
 	// y3 - y1 == y2 - y1
-	float invslope1 = (float)(x3 - x1) / (y3 - y1);
-	float invslope2 = (float)(x3 - x2) / (y3 - y1);
-	float curx1 = (float)x1;
-	float curx2 = (float)x2;
+
+	float yheight = (y3 - y1);
+
+	float dx_left = (float)(x3 - x1) / yheight;
+	float dx_right = (float)(x3 - x2) / yheight;
+	float xs = (float)x1;
+	float xe = (float)x2;
 
 
-	float uinvslope1 = (float)(u3 - u1) / (y3 - y1); // du / dy
-	float uinvslope2 = (float)(u3 - u2) / (y3 - y1); // du / dy
-	float curu1 = u1;
-	float curu2 = u2;
+	float du_left = (float)(u3 - u1) / yheight; // du / dy
+	float du_right = (float)(u3 - u2) / yheight; // du / dy
+	float us = u1;
+	float ue = u2;
 
-	float vinvslope1 = (float)(v3 - v1) / (y3 - y1); // dv / dy
-	float vinvslope2 = (float)(v3 - v2) / (y3 - y1); // dv / dy
-	float curv1 = v1;
-	float curv2 = v2;
+	float dv_left = (float)(v3 - v1) / yheight; // dv / dy
+	float dv_right = (float)(v3 - v2) / yheight; // dv / dy
+	float vs = v1;
+	float ve = v2;
 
-
-	// 3
-	//12
 
 	for (int y = y1; y < y3; y++)
 	{
 		if (y < miny || y >= maxy)
 		{
-			curx1 += invslope1;
-			curx2 += invslope2;
-			curu1 += uinvslope1;
-			curu2 += uinvslope2;
-			curv1 += vinvslope1;
-			curv2 += vinvslope2;
+			xs += dx_left;
+			xe += dx_right;
+			us += du_left;
+			ue += du_right;
+			vs += dv_left;
+			ve += dv_right;
 			continue;
 		}
 
-		draw_xspan(pixels, zbuffer, width, height, texture, (int)curx1, y, z1, (int)curx2, z2, color, curu1, curv1, curu2, curv2, minx, maxx, miny, maxy);
-		curx1 += invslope1;
-		curx2 += invslope2;
-		curu1 += uinvslope1;
-		curu2 += uinvslope2;
-		curv1 += vinvslope1;
-		curv2 += vinvslope2;
+		draw_xspan(pixels, zbuffer, width, height, texture, (int)xs, y, z1, (int)xe, z2, color, us, vs, ue, ve, minx, maxx, miny, maxy);
+		xs += dx_left;
+		xe += dx_right;
+		us += du_left;
+		ue += du_right;
+		vs += dv_left;
+		ve += dv_right;
 
 	}
 }
