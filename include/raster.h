@@ -51,6 +51,7 @@ public:
 		const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
 		const int start_index, const int start_vertex, const int num_index, const int num_verts, int clip);
 
+private:
 
 	// main triangle render function for 3d, textures, z buffer, mip mapping, etc all works
 	// uses barycentric triangle tests, can definitely be optimized for speed
@@ -66,9 +67,6 @@ public:
 		const float lu3, const float lv3,
 		const int minx, const int maxx, const int miny, const int maxy, bool filter = false, bool trilinear = false, bool mipmap = true);
 
-	// 2D determinent can be used to determine winding order, used by barycentric_triangle
-	inline int det(int ax, int ay, int bx, int by);
-
 
 	// draws a triangle using xspans (top, triangle, bottom triangle, splitting) textures half work
 	void span_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture,
@@ -79,6 +77,10 @@ public:
 		float u2, float v2,
 		float u3, float v3,
 		const int minx, const int maxx, const int miny, const int maxy);
+
+	// 2D determinent can be used to determine winding order, used by barycentric_triangle
+	inline int det(int ax, int ay, int bx, int by);
+
 
 	// span_triangle sub-function draws a special case triangle with flat bottom
 	void fill_bottom_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
