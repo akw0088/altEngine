@@ -145,6 +145,39 @@ public:
 		int x, int y,
 		unsigned int *sprite, unsigned int sprite_width, unsigned int sprite_height);
 
+
+
+
+
+
+	// GDI functions to eventually make wrappers of
+	/*
+	Rectangle(hdc,
+	(int)((point.x * scale - size * scale) + offset.x),
+	(int)((point.y * scale - size * scale) + offset.y),
+	(int)((point.x * scale + size * scale) + offset.x),
+	(int)((point.y * scale + size * scale) + offset.y));
+
+	Ellipse(hdc, left, top, right, bottom);
+
+	MoveToEx(hdc,
+	(int)(a.x * scale + offset.x),
+	(int)(a.y * scale + offset.y),
+	NULL);
+
+	LineTo(hdc,
+	(int)(b.x * scale + offset.x),
+	(int)(b.y * scale + offset.y));
+
+
+	int ret0 = ExtFloodFill(hdc,
+	(int)((point.x * scale) + offset.x),
+	(int)((point.y * scale) + offset.y),
+	color,
+	FLOODFILLBORDER);
+	*/
+
+
 private:
 	char *tga_24to32(int width, int height, char *pBits, bool bgr);
 

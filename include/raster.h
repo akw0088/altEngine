@@ -109,62 +109,6 @@ public:
 	void draw_pixel(unsigned int *pixels, float *zbuffer, int width, int height, int x, int y, float z, unsigned int color);
 
 
-	// basic 2D line drawing
-	void draw_line(unsigned int *pixels, int width, int height, int x1, int y1, int x2, int y2, int color);
-
-	// crappy flood fill algorithm
-	void flood_fill(unsigned int *pixels, int width, int height, int x, int y, int old_color, int new_color);
-
-	// draws a rectangle using line function with rotation
-	void draw_rect(unsigned int *pixels, int width, int height, float angle, int w, int l, int x, int y, int color);
-	
-	// draws a rectangle using line function no rotation
-	void Rectangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, int y2);
-
-	// draws a triangle using line function
-	void Triangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, int y2, int color);
-
-	// draws text from a bitmap atlas
-	void draw_text(unsigned int *vram, unsigned int *tex, char *msg, int x, int y, int xres, int yres);
-
-	// draws a circle non-filled
-	void draw_circle(unsigned int *pixels, int width, int height, int xc, int yc, int radius, int color, int filled);
-
-	// draws an ellipse non-filled
-	void draw_ellipse(unsigned int *pixels, int width, int height, int xc, int yc, int rx, int ry, int color, int filled);
-
-
-
-	// GDI functions to eventually make wrappers of
-/*
-	Rectangle(hdc,
-		(int)((point.x * scale - size * scale) + offset.x),
-		(int)((point.y * scale - size * scale) + offset.y),
-		(int)((point.x * scale + size * scale) + offset.x),
-		(int)((point.y * scale + size * scale) + offset.y));
-
-	Ellipse(hdc, left, top, right, bottom);
-
-	MoveToEx(hdc,
-		(int)(a.x * scale + offset.x),
-		(int)(a.y * scale + offset.y),
-		NULL);
-
-	LineTo(hdc,
-		(int)(b.x * scale + offset.x),
-		(int)(b.y * scale + offset.y));
-
-
-	int ret0 = ExtFloodFill(hdc,
-		(int)((point.x * scale) + offset.x),
-		(int)((point.y * scale) + offset.y),
-		color,
-		FLOODFILLBORDER);
-*/
-
-
-
-
 
 	// draws a single pixel using texture, mipmaps, filtering, blending etc
 	void render_pixel(unsigned int *pixels, float *zbuffer, const int width, const int height, int x, int y, float zi, const texinfo_t *texture, const texinfo_t *lightmap, bool mipmap, int mip_level, float u, float v, float blend, bool filter, bool trilinear);
