@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <math.h>
+#ifdef FREETYPE
 #include "freetype.h"
+#endif
 
 #define SWAP(a,b) {temp = a; a = b; b = temp;}
 
