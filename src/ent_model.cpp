@@ -246,7 +246,6 @@ void EntModel::make_aabb()
 
 void EntModel::update_obb()
 {
-
 	center = vec3(0.0f, 0.0f, 0.0f);
 
 	for (unsigned int i = 0; i < 8; i++)
@@ -264,13 +263,9 @@ void EntModel::update_obb()
 		point = point - offset;
 
 		// translate to world coordinates
-		obb[i] = point + entity->position;
-
-
-		center += obb[i];
+		obb[i] = point;
 	}
 
-	center = center / 8;
 }
 
 void EntModel::render(Graphics &gfx)

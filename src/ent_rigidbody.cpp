@@ -291,7 +291,7 @@ bool EntRigidBody::collision_detect(plane_t &p)
 	for( int i = 0;	i < 8; i++)
 	{
 		// convert rotated point back to local coordinates
-		vec3 point = point - entity->position;
+		vec3 point = obb[i] - entity->position;
 
 		// convert point back to radius from center
 		point = point + center;
