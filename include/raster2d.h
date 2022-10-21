@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <math.h>
+#ifdef FREETYPE
+#include "freetype.h"
+#endif
 
 #define SWAP(a,b) {temp = a; a = b; b = temp;}
 
@@ -143,13 +146,9 @@ public:
 
 	void BitBlt(unsigned int *pixels, int width, int height,
 		int x, int y,
-		unsigned int *sprite, unsigned int sprite_width, unsigned int sprite_height);
-
-
-
-
-
-
+		unsigned int *sprite, unsigned int sprite_width, unsigned int sprite_height,
+		int mode);
+		
 	// GDI functions to eventually make wrappers of
 	/*
 	Rectangle(hdc,
@@ -177,6 +176,10 @@ public:
 	FLOODFILLBORDER);
 	*/
 
+
+#ifdef FREETYPE_H
+	void draw_string(unsigned int *pixels, int width, int height, FreeType &font, int x_pos, int y_pos, char *str);
+#endif
 
 private:
 	char *tga_24to32(int width, int height, char *pBits, bool bgr);
@@ -216,7 +219,6 @@ private:
 	void Triangle_Line(unsigned int *pixels, unsigned int xs, unsigned int xe, int color);
 	void Draw_Top_Triangle(unsigned int *pixels, int swidth, int sheight, int x1, int y1, int x2, int y2, int x3, int y3, int color);
 	void Draw_Bottom_Triangle(unsigned int *pixels, int swidth, int sheight, int x1, int y1, int x2, int y2, int x3, int y3, int color);
-
 
 
 private:

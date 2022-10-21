@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "Raster2D.h"
+#include "raster2d.h"
 
 
 
@@ -1415,9 +1415,9 @@ void Raster2D::draw_text(unsigned int *pixels, int width, int height, char *msg,
 
 				// bitmap is upside down, so invert Y
 				if (flip)
-					pixels[(x + i + x_shift) + (y + j) * width] = tex[((255 - py) * 256) + px];
+					pixels[(x + i + x_shift) + (y + j) * width] |= ~tex[((255 - py) * 256) + px];
 				else
-					pixels[(x + i + x_shift) + (255 - (y + j)) * width] = tex[((255 - py) * 256) + px];
+					pixels[(x + i + x_shift) + (255 - (y + j)) * width] |= ~tex[((255 - py) * 256) + px];
 
 			}
 		}
@@ -1597,13 +1597,33 @@ void Raster2D::draw_ellipse(unsigned int *pixels, int width, int height, int xc,
 
 void Raster2D::BitBlt(unsigned int *pixels, int width, int height,
 	int x, int y,
-	unsigned int *sprite, unsigned int sprite_width, unsigned int sprite_height)
+	unsigned int *sprite, unsigned int sprite_width, unsigned int sprite_height, int mode)
 {
 	for (int j = 0; j <= sprite_height - 1; j++)
 	{
 		for (int i = 0; i <= sprite_width - 1; i++)
 		{
-			pixels[x + i + (y + j) * width] = sprite[(j * sprite_width) + i];
+			if (mode)
+				pixels[x + i + (y + j) * width] |= sprite[(j * sprite_width) + i];
+			else
+				pixels[x + i + (y + j) * width] = sprite[(j * sprite_width) + i];
 		}
 	}
 }
+
+#ifdef FREETYPE_H
+void Raster2D::draw_string(unsigned int *pixels, int width, int height, FreeType &font, int x_pos, int y_pos, char *str)
+{
+	font_t c;
+
+	unsigned int length = strlen(str);
+	for (unsigned int i = 0; i < length; i++)
+	{
+		font.getBitmap32(str[i], c);
+		x_pos += c.left;
+		BitBlt(pixels, width, height, x_pos, y_pos, (unsigned int *)c.data, c.px, c.py, 1);
+		x_pos += c.advance;
+		free((void *)c.data);
+	}
+}
+#endif

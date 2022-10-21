@@ -5331,3 +5331,97 @@ bool gluUnProject(float x, float y, float z, matrix4 &model, matrix4 &proj, int 
 
 	return true;
 }
+
+
+void make_cone(float radius, float height, vec3& center, int step, vertex_t* triangles, unsigned int& num_triangle)
+{
+	vertex_t points[8192];
+	unsigned int num_point = 0;
+
+	// first point for fan
+	points[num_point].position = center;
+	num_point++;
+
+	// make the cone top
+	for (int i = 0; i < 360; i += 360 / step)
+	{
+		float x = radius * cos(i * 3.141592 / 180) + center.x;
+		float y = radius * sin(i * 3.141592 / 180) + center.y;
+		float z = center.z + height;
+
+		points[num_point].position = vec3(x, y, z);
+		num_point++;
+	}
+
+	// make last point first point to complete circle
+	points[num_point] = points[1];
+	num_point++;
+
+
+
+	// make the cone bottom
+	// first point is the center
+	points[num_point].position = vec3(center.x, center.y, center.z + height);
+	num_point++;
+
+
+	int bottom_first = num_point;
+
+	for (int i = 0; i < 360; i += 360 / step)
+	{
+		float x = radius * cos(i * 3.141592 / 180) + center.x;
+		float y = radius * sin(i * 3.141592 / 180) + center.y;
+		float z = center.z + height;
+
+		points[num_point].position = vec3(x, y, z);
+		num_point++;
+	}
+
+
+	// make last point first point to complete circle
+	points[num_point] = points[bottom_first];
+	num_point++;
+
+
+	// Convert triangle fan to regular triangles
+	int first = 0;
+	num_triangle = 0;
+
+	for (int i = 1; i < num_point / 2 - 1; i++)
+	{
+		int a = first;
+		int b = i % num_point;
+		int c = (i + 1) % num_point;
+
+		// add triangle using last two points
+		triangles[num_triangle++] = points[a];
+		triangles[num_triangle++] = points[b];
+		triangles[num_triangle++] = points[c];
+
+		// add triangles both directions to avoid weird culling
+		triangles[num_triangle++] = points[c];
+		triangles[num_triangle++] = points[b];
+		triangles[num_triangle++] = points[a];
+	}
+
+
+	first = bottom_first - 1;
+
+	for (int i = bottom_first; i < num_point; i++)
+	{
+		int a = first;
+		int b = i % num_point;
+		int c = (i + 1) % num_point;
+
+		// add triangle using last two points
+		triangles[num_triangle++] = points[a];
+		triangles[num_triangle++] = points[b];
+		triangles[num_triangle++] = points[c];
+
+
+		// add triangles both directions to avoid weird culling
+		triangles[num_triangle++] = points[c];
+		triangles[num_triangle++] = points[b];
+		triangles[num_triangle++] = points[a];
+	}
+}
