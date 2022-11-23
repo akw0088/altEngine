@@ -31,21 +31,40 @@ int main(int argc, char *argv[])
 	obj.load(file_name);
 	obj.scale(scalar);
 
-	obj.create_index(&index_array, num_index);
-	cout << "Writing index buffer" << endl;
-	string ibo_name = file_name.replace(file_name.length() - 3, 3, "ibo");
-	ofstream ibo(ibo_name.c_str(), ios::binary);
-	ibo.write((char *)&num_index, sizeof(int));
-	ibo.write((char *)index_array, num_index * sizeof(int));
-	ibo.close();
 
-	obj.create_vertex(&vertex_array, num_vertex);
+	for (int k = 0; k < obj.object.size(); k++)
+	{
+		obj.create_index(&index_array, num_index, k);
+		string ibo_name = string(obj.object[k].name) + ".ibo";
+		cout << "Writing index buffer for " + ibo_name << endl;
+		ofstream ibo(ibo_name.c_str(), ios::binary);
+		ibo.write((char *)&num_index, sizeof(int));
+		ibo.write((char *)index_array, num_index * sizeof(int));
+		ibo.close();
+	}
+
+	// create single vertex buffer from each index buffer
+	num_vertex = obj.vec_vertex.size();
+	vertex_array = new vertex_t[num_vertex];
+
+	//some verts are never referenced by any index
+	memset(vertex_array, 0, num_vertex * sizeof(vertex_t));
+
+	// run through all the faces, updating the attributes per face
+	for (int k = 0; k < obj.object.size(); k++)
+	{
+		obj.create_vertex(&vertex_array, k);
+	}
+
 	cout << "Writing vertex buffer" << endl;
-	string vbo_name = file_name.replace(file_name.length() - 3, 3, "vbo");
+	string vbo_name = file_name.substr(0, file_name.size() - 4);
+	vbo_name.append(".vbo");
+
 	ofstream vbo(vbo_name.c_str(), ios::binary);
 	vbo.write((char *)&num_vertex, sizeof(int));
 	vbo.write((char *)vertex_array, num_vertex * sizeof(vertex_t));
 	vbo.close();
+
 
 	return 0;
 }

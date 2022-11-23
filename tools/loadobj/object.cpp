@@ -38,6 +38,9 @@ void Object::pass_count(string &line)
 	case 'f':
 		num_face++;
 		break;
+	case 'o':
+		num_object++;
+		break;
 	case 'g':
 //		sscanf(line, "g %s", name);
 		break;
@@ -55,6 +58,7 @@ void Object::pass_extract(string &line)
 	vec3_t	vertex;
 	face_t	face;
 	int ret;
+
 
 	switch (line[0])
 	{
@@ -79,10 +83,41 @@ void Object::pass_extract(string &line)
 		}
 		break;
 	case 'f':
+	{
+		face_t quad1;
+		face_t quad2;
+
+		ret = sscanf(line.c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d",
+			&quad1.vindex[0], &quad1.tindex[0], &quad1.nindex[0],
+			&quad1.vindex[1], &quad1.tindex[1], &quad1.nindex[1],
+			&quad1.vindex[2], &quad1.tindex[2], &quad1.nindex[2],
+			&quad2.vindex[2], &quad2.tindex[2], &quad2.nindex[2]
+		);
+
+		if (ret == 12)
+		{
+			//we have a quad definition
+			//    Triangle 1: 1/1/1 2/2/2 3/3/3
+			object[current_object].vec_face.push_back(quad1);
+
+			//    Triangle 2: 1/1/1 3/3/3 4/4/4.
+			ret = sscanf(line.c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d",
+				&quad2.vindex[0], &quad2.tindex[0], &quad2.nindex[0],
+				&quad1.vindex[1], &quad1.tindex[1], &quad1.nindex[1],
+				&quad2.vindex[1], &quad2.tindex[1], &quad2.nindex[1],
+				&quad2.vindex[2], &quad2.tindex[2], &quad2.nindex[2]
+			);
+
+			object[current_object].vec_face.push_back(quad2);
+			break;
+		}
+
+
 		ret = sscanf(line.c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d",
 			&face.vindex[0], &face.tindex[0], &face.nindex[0],
 			&face.vindex[1], &face.tindex[1], &face.nindex[1],
 			&face.vindex[2], &face.tindex[2], &face.nindex[2]);
+
 		if (ret != 9)
 		{
 			ret = sscanf(line.c_str(), "f %d//%d %d//%d %d//%d",
@@ -93,41 +128,58 @@ void Object::pass_extract(string &line)
 			face.tindex[1] = -1;
 			face.tindex[2] = -1;
 		}
-		vec_face.push_back(face);
+		if (object.size() == 0)
+		{
+			object.resize(object.size() + 1);
+			current_object = num_object;
+		}
+
+		object[current_object].vec_face.push_back(face);
 		break;
+	}
 	case 'g':
 //		sscanf(line, "g %s", name);
 		break;
 	case 's':
 //		sscanf(line, "s %s", name);
 		break;
-	case 'u':
-//		sscanf(line, "usemtl %s", name);
+	case 'o':
+		object.resize(object.size() + 1);
+		current_object = num_object;
+		sscanf(line.c_str(), "o %s", &object[current_object].name[0]);
+		//printf("\tLoading sub-object %s\r\n", object[current_object].name);
+		num_object++;
 		break;
+	case 'u':
+	{
+		sscanf(line.c_str(), "usemtl %s", &object[current_object].matname[0]);
+		printf("%s: %s\r\n", object[current_object].name, object[current_object].matname);
+		break;
+	}
 	}
 }
 
 void Object::scale(float scalar)
 {
-	for(int i = 0; i < vec_vertex.size(); i++)
-	{
-		vec_vertex[i].x *= scalar;
-		vec_vertex[i].y *= scalar;
-		vec_vertex[i].z *= scalar;
-	}
+		for (int i = 0; i < vec_vertex.size(); i++)
+		{
+			vec_vertex[i].x *= scalar;
+			vec_vertex[i].y *= scalar;
+			vec_vertex[i].z *= scalar;
+		}
 }
 
-void Object::create_index(int **index_array, int &num_index)
+void Object::create_index(int **index_array, int &num_index, int k)
 {
-	num_index = vec_face.size() * 3;
+	num_index = object[k].vec_face.size() * 3;
 	(*index_array) = new int [num_index];
 	int j = 0;
 
-	for(int i = 0; i < vec_face.size(); i++)
+	for(int i = 0; i < object[k].vec_face.size(); i++)
 	{
-		(*index_array)[j++] = vec_face[i].vindex[0] - 1;
-		(*index_array)[j++] = vec_face[i].vindex[2] - 1;
-		(*index_array)[j++] = vec_face[i].vindex[1] - 1;
+		(*index_array)[j++] = object[k].vec_face[i].vindex[0] - 1;
+		(*index_array)[j++] = object[k].vec_face[i].vindex[2] - 1;
+		(*index_array)[j++] = object[k].vec_face[i].vindex[1] - 1;
 	}
 }
 
@@ -141,12 +193,31 @@ typedef struct
 */
 
 // really dont remember why I didnt want to include my vector classes in here
-void create_tangent(face_t &face, vertex_t *vertex_array)
+void create_tangent(face_t &face, vertex_t *vertex_array, int length)
 {
 	vec3_t p, q, n;
 	vec3_t t, b;
 	float s1, s2, t1, t2;
 	float denom;
+
+
+	if (face.vindex[0] - 1 >= length)
+	{
+		printf("create_tangent vertex out of range\r\n");
+		return;
+	}
+
+	if (face.vindex[1] - 1 >= length)
+	{
+		printf("create_tangent vertex out of range\r\n");
+		return;
+	}
+
+	if (face.vindex[2] - 1 >= length)
+	{
+		printf("create_tangent vertex out of range\r\n");
+		return;
+	}
 
 
 	// triangle span vectors
@@ -199,31 +270,45 @@ void create_tangent(face_t &face, vertex_t *vertex_array)
 	vertex_array[face.vindex[0] - 1].tangent.w = 1.0f;
 }
 
-void Object::create_vertex(vertex_t **vertex_array, int &num_vertex)
+void Object::create_vertex(vertex_t **vertex_array, int k)
 {
-	num_vertex = vec_vertex.size();
-	(*vertex_array) = new vertex_t [num_vertex];
 
-	//some verts are never referenced by any index
-	memset((*vertex_array), 0, num_vertex * sizeof(vertex_t));
-
-	for(int i = 0; i < vec_face.size(); i++)
+	for(int i = 0; i < object[k].vec_face.size(); i++)
 	{
 		for(int j = 0; j < 3; j++)
 		{
 			//indexes are one based
-			int vec_index = vec_face[i].vindex[j] - 1;
-			int tex_index = vec_face[i].tindex[j] - 1;
-			int norm_index = vec_face[i].nindex[j] - 1;
+			int vec_index = object[k].vec_face[i].vindex[j] - 1;
+			int tex_index = object[k].vec_face[i].tindex[j] - 1;
+			int norm_index = object[k].vec_face[i].nindex[j] - 1;
+
+			if (vec_index >= vec_vertex.size())
+			{
+				printf("Warning object %s had out of range vertex\r\n", object[k].name);
+				continue;
+			}
+
+			if (tex_index >= vec_texture.size())
+			{
+				printf("Warning object %s had out of range texcoord\r\n", object[k].name);
+				continue;
+			}
+
+			if (norm_index >= vec_normal.size())
+			{
+				printf("Warning object %s had out of range normal\r\n", object[k].name);
+				continue;
+			}
 
 			(*vertex_array)[ vec_index ].position = vec_vertex[ vec_index ];
-			if (tex_index != -2)
+			if (tex_index != -2 && tex_index < vec_texture.size() )
 			{
 				(*vertex_array)[ vec_index ].texCoord0.x = vec_texture[ tex_index ].x;
 				(*vertex_array)[ vec_index ].texCoord0.y = vec_texture[ tex_index ].y;
 			}
 			(*vertex_array)[ vec_index ].normal = vec_normal[ norm_index ];
 		}
-		create_tangent(vec_face[i], (*vertex_array));
+//		create_tangent(object[k].vec_face[i], (*vertex_array), vec_vertex.size());
 	}
 }
+

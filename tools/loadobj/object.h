@@ -44,25 +44,36 @@ typedef struct
 
 using namespace std;
 
+typedef struct
+{
+	vector<face_t> vec_face;
+	char name[128];
+	char matname[128];
+} object_t;
+
 class Object
 {
 public:
 	void load(string &file_name);
 	void pass_count(string &line);
 	void pass_extract(string &line);
-	void create_index(int **index_array, int &num_index);
-	void create_vertex(vertex_t **vertex_array, int &num_vertex);
+	void create_index(int **index_array, int &num_index, int k);
+	void create_vertex(vertex_t **vertex_array, int k);
 	void scale(float scalar);
-private:
+
+//private:
+	vector<object_t> object;
 	int num_vertex;
 	int num_texture;
 	int num_normal;
 	int num_face;
+	int num_object;
+	int current_object;
 
 	vector<vec3_t> vec_vertex;
 	vector<vec3_t> vec_texture;
 	vector<vec3_t> vec_normal;
-	vector<face_t> vec_face;
+
 };
 
 #endif
