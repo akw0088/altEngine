@@ -56,8 +56,10 @@ void Object::pass_count(string &line)
 void Object::pass_extract(string &line)
 {
 	vec3_t	vertex;
+	vec2_t	texcoord;
 	face_t	face;
 	int ret;
+	char matfile[128] = { 0 };
 
 
 	switch (line[0])
@@ -68,8 +70,8 @@ void Object::pass_extract(string &line)
 		switch (line[1])
 		{
 		case 't':
-			sscanf(line.c_str(), "vt %f %f %f", &vertex.x, &vertex.y, &vertex.z);
-			vec_texture.push_back(vertex);
+			sscanf(line.c_str(), "vt %f %f", &texcoord.x, &texcoord.y);
+			vec_texture.push_back(texcoord);
 			break;
 		case 'n':
 			sscanf(line.c_str(), "vn %f %f %f", &vertex.x, &vertex.y, &vertex.z);
@@ -84,6 +86,7 @@ void Object::pass_extract(string &line)
 		break;
 	case 'f':
 	{
+		/*
 		face_t quad1;
 		face_t quad2;
 
@@ -111,12 +114,17 @@ void Object::pass_extract(string &line)
 			object[current_object].vec_face.push_back(quad2);
 			break;
 		}
-
+		*/
 
 		ret = sscanf(line.c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d",
 			&face.vindex[0], &face.tindex[0], &face.nindex[0],
 			&face.vindex[1], &face.tindex[1], &face.nindex[1],
 			&face.vindex[2], &face.tindex[2], &face.nindex[2]);
+
+		if (strcmp(object[current_object].name, "sponza_69") == 0)
+		{
+			printf("break");
+		}
 
 		if (ret != 9)
 		{
@@ -147,13 +155,27 @@ void Object::pass_extract(string &line)
 		object.resize(object.size() + 1);
 		current_object = num_object;
 		sscanf(line.c_str(), "o %s", &object[current_object].name[0]);
-		//printf("\tLoading sub-object %s\r\n", object[current_object].name);
+		printf("Loading sub-object %s\r\n", object[current_object].name);
 		num_object++;
 		break;
 	case 'u':
 	{
 		sscanf(line.c_str(), "usemtl %s", &object[current_object].matname[0]);
-		printf("%s: %s\r\n", object[current_object].name, object[current_object].matname);
+		printf("\tmaterial for %s: %s\r\n", object[current_object].name, object[current_object].matname);
+		break;
+	}
+	case 'm':
+	{
+		sscanf(line.c_str(), "mtllib %s", matfile);
+		printf("Material file %s\r\n", matfile);
+		break;
+	}
+	default:
+	{
+		if (line.length() > 0)
+		{
+			printf("Unrecognized line [%s]\r\n", line.c_str());
+		}
 		break;
 	}
 	}
@@ -169,7 +191,7 @@ void Object::scale(float scalar)
 		}
 }
 
-void Object::create_index(int **index_array, int &num_index, int k)
+void Object::create_index(int **index_array, unsigned int &num_index, int k)
 {
 	num_index = object[k].vec_face.size() * 3;
 	(*index_array) = new int [num_index];
@@ -177,9 +199,9 @@ void Object::create_index(int **index_array, int &num_index, int k)
 
 	for(int i = 0; i < object[k].vec_face.size(); i++)
 	{
-		(*index_array)[j++] = object[k].vec_face[i].vindex[0] - 1;
 		(*index_array)[j++] = object[k].vec_face[i].vindex[2] - 1;
 		(*index_array)[j++] = object[k].vec_face[i].vindex[1] - 1;
+		(*index_array)[j++] = object[k].vec_face[i].vindex[0] - 1;
 	}
 }
 
@@ -191,6 +213,23 @@ typedef struct
 	int nindex[3];
 } face_t;
 */
+
+
+vec3_t crossproduct(const vec3_t &VecA, const vec3_t &VecB)
+{
+	vec3_t	result;
+
+	result.x = VecA.y * VecB.z - VecA.z * VecB.y;
+	result.y = VecA.z * VecB.x - VecA.x * VecB.z;
+	result.z = VecA.x * VecB.y - VecA.y * VecB.x;
+	return result;
+}
+
+
+float dotproduct(const vec3_t &VecA, const vec3_t &VecB)
+{
+	return ((double)VecA.x * VecB.x + (double)VecA.y * VecB.y + (double)VecA.z * VecB.z);
+}
 
 // really dont remember why I didnt want to include my vector classes in here
 void create_tangent(face_t &face, vertex_t *vertex_array, int length)
@@ -255,19 +294,31 @@ void create_tangent(face_t &face, vertex_t *vertex_array, int length)
 	}
 	else
 	{
-		t.x = 1.0f;
+		t.x = 0.0f;
 		t.y = 0.0f;
 		t.z = 0.0f;
 		b.x = 0.0f;
 		b.y = 0.0f;
-		b.z = 1.0f;
+		b.z = 0.0f;
 	}
 
+
 	
-	vertex_array[face.vindex[0] - 1].tangent.x = t.x;
-	vertex_array[face.vindex[0] - 1].tangent.y = t.y;
-	vertex_array[face.vindex[0] - 1].tangent.z = t.z;
+	vertex_array[face.vindex[0] - 1].tangent.x += t.x;
+	vertex_array[face.vindex[0] - 1].tangent.y += t.y;
+	vertex_array[face.vindex[0] - 1].tangent.z += t.z;
 	vertex_array[face.vindex[0] - 1].tangent.w = 1.0f;
+
+	/*
+	if (dotproduct(crossproduct(n, t), b) < 0)
+	{
+		vertex_array[face.vindex[0] - 1].tangent.w = -1.0f;
+	}
+	else
+	{
+		vertex_array[face.vindex[0] - 1].tangent.w = 1.0f;
+	}
+	*/
 }
 
 void Object::create_vertex(vertex_t **vertex_array, int k)
@@ -275,6 +326,11 @@ void Object::create_vertex(vertex_t **vertex_array, int k)
 
 	for(int i = 0; i < object[k].vec_face.size(); i++)
 	{
+		if (strcmp(object[k].name, "sponza_69") == 0)
+		{
+			printf("f");
+		}
+
 		for(int j = 0; j < 3; j++)
 		{
 			//indexes are one based
@@ -306,9 +362,35 @@ void Object::create_vertex(vertex_t **vertex_array, int k)
 				(*vertex_array)[ vec_index ].texCoord0.x = vec_texture[ tex_index ].x;
 				(*vertex_array)[ vec_index ].texCoord0.y = vec_texture[ tex_index ].y;
 			}
+			else
+			{
+				printf("Warning invalid texture index provided, corrupt obj\r\n");
+			}
 			(*vertex_array)[ vec_index ].normal = vec_normal[ norm_index ];
+
+
+			if (strcmp(object[k].name, "sponza_69") == 0)
+			{
+				/*
+				printf("vt %f %f\n",
+					(*vertex_array)[vec_index].texCoord0.x = vec_texture[tex_index].x,
+					(*vertex_array)[vec_index].texCoord0.y = vec_texture[tex_index].y
+				);
+				*/
+
+
+				printf(" %d/%d/%d", vec_index + 1, tex_index + 1, norm_index + 1);
+
+//				printf("mapping tindex %d -> %d\r\n", vec_index + 1, tex_index + 1);
+			}
+
 		}
-//		create_tangent(object[k].vec_face[i], (*vertex_array), vec_vertex.size());
+		if (strcmp(object[k].name, "sponza_69") == 0)
+		{
+			printf("\n");
+		}
 	}
+
+	create_tangent(object[k].vec_face[0], (*vertex_array), vec_vertex.size());
 }
 

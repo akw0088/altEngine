@@ -12,11 +12,10 @@ int main(int argc, char *argv[])
 {
 	Object obj;
 	int *index_array = NULL;
-	int num_index;
-	model_header	header;
+	
 
 	vertex_t *vertex_array = NULL;
-	int num_vertex;
+	size_t num_vertex;
 
 	if (argc != 3)
 	{
@@ -34,6 +33,8 @@ int main(int argc, char *argv[])
 
 	for (int k = 0; k < obj.object.size(); k++)
 	{
+		unsigned int num_index = 0;
+
 		obj.create_index(&index_array, num_index, k);
 		string ibo_name = string(obj.object[k].name) + ".ibo";
 		cout << "Writing index buffer for " + ibo_name << endl;

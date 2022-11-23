@@ -57,7 +57,8 @@ public:
 	void load(string &file_name);
 	void pass_count(string &line);
 	void pass_extract(string &line);
-	void create_index(int **index_array, int &num_index, int k);
+
+	void create_index(int **index_array, unsigned int &num_index, int k);
 	void create_vertex(vertex_t **vertex_array, int k);
 	void scale(float scalar);
 
@@ -71,7 +72,7 @@ public:
 	int current_object;
 
 	vector<vec3_t> vec_vertex;
-	vector<vec3_t> vec_texture;
+	vector<vec2_t> vec_texture;
 	vector<vec3_t> vec_normal;
 
 };
