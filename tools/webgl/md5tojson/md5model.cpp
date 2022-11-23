@@ -1,4 +1,3 @@
-#pragma once
 //=============================================================================
 // This file is part of the altEngine distribution
 // (https://github.com/akw0088/altEngine/)
@@ -25,6 +24,7 @@
 ///============================================================================
 
 
+#include <cstdio>
 #include <stack>
 #include "md5model.h"
 #include "md5_types.h"

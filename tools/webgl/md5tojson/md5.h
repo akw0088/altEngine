@@ -18,6 +18,9 @@
 #ifndef MD5_H
 #define MD5_H
 
+#include <cstdio>
+#include <cstring>
+#include <cmath>
 #include <stack>
 
 using namespace std;
