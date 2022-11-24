@@ -3,6 +3,10 @@
 #include <json/json.h> 
 #include "base64.h"
 
+// Got the jist of things from here, half tempted to write my own JSON parser
+// https://wirewhiz.com/read-gltf-files/
+//
+
 
 #pragma pack(1)
 typedef struct
@@ -571,7 +575,7 @@ int gltf_load_base64_bin(char* gltfFilename, bool print)
 }
 
 
-int glb_load(char *glbFilename)
+int glb_load(char *glbFilename, bool print)
 {
 	std::ifstream binFile = std::ifstream(glbFilename, std::ios::binary);
 
@@ -586,8 +590,8 @@ int glb_load(char *glbFilename)
 
 											  // Parse the json
 	Json::Reader reader;
-	Json::Value _json;
-	if (!reader.parse(jsonStr, _json))
+	Json::Value root;
+	if (!reader.parse(jsonStr, root))
 		std::cerr << "Problem parsing assetData: " << jsonStr << std::endl;
 
 	// After reading from the json, the file cusor will automatically be at the start of the binary header
@@ -598,6 +602,201 @@ int glb_load(char *glbFilename)
 
 	std::vector<char> bin(binLength);
 	binFile.read(bin.data(), binLength);
+
+
+	// Now that we have the files read out, let's actually do something with them
+// This code prints out all the vertex positions for the first primitive
+
+// Get the primitve we want to print out: 
+
+	int num_mesh = root["meshes"].size();
+
+	for (int i = 0; i < num_mesh; i++)
+	{
+		char name[128] = { 0 };
+		std::vector<vertex_t> vertex_array;
+		std::vector<unsigned int> index_array;
+
+
+
+
+
+		Json::Value& json_name = root["meshes"][i]["name"];
+
+
+		sprintf(&name[0], "%s", json_name.asCString());
+
+
+		unsigned int master_base = master_vertex_array.size();
+		unsigned int master_index_base = master_index_array.size();
+
+		master_name.push_back(name);
+
+		printf("Loading %s\r\n", name);
+
+
+		// get the primitives array
+		Json::Value& primitive = root["meshes"][i]["primitives"][0];
+		int pos_index = primitive["attributes"]["POSITION"].asInt();
+		int norm_index = primitive["attributes"]["NORMAL"].asInt();
+		int tangent_index = primitive["attributes"]["TANGENT"].asInt();
+		int tex_index = primitive["attributes"]["TEXCOORD_0"].asInt();
+
+		int index_index = primitive["indices"].asInt();
+
+		// 5123 == short, 5124 == int, 5125 == unsigned int, 5126 == float
+		int type = root["accessors"][index_index]["componentType"].asInt();
+
+
+
+
+		// Get the accessor for position: 
+		Json::Value& position_Accessor = root["accessors"][pos_index];
+		Json::Value& normal_Accessor = root["accessors"][norm_index];
+		Json::Value& tangent_Accessor = root["accessors"][tangent_index];
+		Json::Value& texture_Accessor = root["accessors"][tex_index];
+
+		//indices
+		Json::Value& index_Accessor = root["accessors"][primitive["indices"].asInt()]; // 4
+		//Json::Value& index_type = root["accessors"][index_index]["componentType"].asInt();
+
+
+		// Get the bufferView 
+		Json::Value& position_BufferView = root["bufferViews"][position_Accessor["bufferView"].asInt()];
+		Json::Value& normal_BufferView = root["bufferViews"][normal_Accessor["bufferView"].asInt()];
+		Json::Value& tangent_BufferView = root["bufferViews"][tangent_Accessor["bufferView"].asInt()];
+		Json::Value& texture_BufferView = root["bufferViews"][texture_Accessor["bufferView"].asInt()];
+
+		Json::Value& index_BufferView = root["bufferViews"][index_Accessor["bufferView"].asInt()];
+
+
+		// Now get the start of the float3 array by adding the bufferView byte offset to the bin pointer
+		// It's a little sketchy to cast to a raw float array, but hey, it works.
+		float* position_buffer = (float*)(bin.data() + position_BufferView["byteOffset"].asInt());
+		float* normal_buffer = (float*)(bin.data() + normal_BufferView["byteOffset"].asInt());
+		float* tangent_buffer = (float*)(bin.data() + tangent_BufferView["byteOffset"].asInt());
+		float* texture_buffer = (float*)(bin.data() + texture_BufferView["byteOffset"].asInt());
+
+		unsigned int* index_buffer = (unsigned int*)(bin.data() + index_BufferView["byteOffset"].asInt());
+		unsigned short* index_buffer_short = (unsigned short*)(bin.data() + index_BufferView["byteOffset"].asInt());
+
+
+		// And as a cherry on top, let's print out the total number of verticies
+		if (print)
+		{
+			std::cout << "\tvertices: " << position_Accessor["count"].asInt() << std::endl;
+		}
+		// Print out all the vertex positions 
+		for (int i = 0; i < position_Accessor["count"].asInt(); ++i)
+		{
+			vertex_t v = { 0 };
+
+			if (print)
+			{
+				std::cout << "positions (" << position_buffer[i * 3 + 0] << ", " << position_buffer[i * 3 + 1] << ", " << position_buffer[i * 3 + 2] << ")" << std::endl;
+			}
+			v.position.x = position_buffer[i * 3 + 0];
+			v.position.y = position_buffer[i * 3 + 1];
+			v.position.z = position_buffer[i * 3 + 2];
+
+			vertex_array.push_back(v);
+
+			master_vertex_array.push_back(v);
+
+		}
+
+
+
+		if (print)
+		{
+			std::cout << "\tnormals: " << normal_Accessor["count"].asInt() << std::endl;
+		}
+		for (int i = 0; i < normal_Accessor["count"].asInt(); ++i)
+		{
+			if (print)
+			{
+				std::cout << "normal (" << normal_buffer[i * 3] << ", " << normal_buffer[i * 3 + 1] << ", " << normal_buffer[i * 3 + 2] << ")" << std::endl;
+			}
+			vertex_array[i].normal.x = normal_buffer[i * 3 + 0];
+			vertex_array[i].normal.y = normal_buffer[i * 3 + 1];
+			vertex_array[i].normal.z = normal_buffer[i * 3 + 2];
+
+
+			master_vertex_array[i + master_base].normal = vertex_array[i].normal;
+
+		}
+
+
+		if (print)
+		{
+			std::cout << "\ttangents: " << tangent_Accessor["count"].asInt() << std::endl;
+		}
+		for (int i = 0; i < tangent_Accessor["count"].asInt(); ++i)
+		{
+			if (print)
+			{
+				std::cout << "tangents (" << tangent_buffer[i * 4] << ", " << tangent_buffer[i * 4 + 1] << ", " << tangent_buffer[i * 4 + 2] << ", " << tangent_buffer[i * 4 + 3] << ")" << std::endl;
+			}
+			vertex_array[i].tangent.x = tangent_buffer[i * 4 + 0];
+			vertex_array[i].tangent.y = tangent_buffer[i * 4 + 1];
+			vertex_array[i].tangent.z = tangent_buffer[i * 4 + 2];
+			vertex_array[i].tangent.w = tangent_buffer[i * 4 + 3];
+
+			master_vertex_array[i + master_base].tangent = vertex_array[i].tangent;
+
+		}
+
+
+
+		if (print)
+		{
+			std::cout << "\ttextures: " << texture_Accessor["count"].asInt() << std::endl;
+		}
+		for (int i = 0; i < texture_Accessor["count"].asInt(); ++i)
+		{
+			if (print)
+			{
+				std::cout << "textures (" << texture_buffer[i * 2] << ", " << texture_buffer[i * 2 + 1] << ")" << std::endl;
+			}
+			vertex_array[i].texCoord0.x = texture_buffer[i * 2 + 0];
+			vertex_array[i].texCoord0.y = texture_buffer[i * 2 + 1];
+			vertex_array[i].texCoord1 = vertex_array[i].texCoord0;
+
+			master_vertex_array[i + master_base].texCoord0 = vertex_array[i].texCoord0;
+			master_vertex_array[i + master_base].texCoord1 = vertex_array[i].texCoord1;
+		}
+
+
+		if (print)
+		{
+			std::cout << "\index: " << index_Accessor["count"].asInt() << std::endl;
+		}
+		for (int i = 0; i < index_Accessor["count"].asInt(); ++i)
+		{
+			if (print)
+			{
+				std::cout << "textures (" << texture_buffer[i * 2] << ", " << texture_buffer[i * 2 + 1] << ")" << std::endl;
+			}
+			if (type == 0x1405 || type == 0x1404)
+			{
+				index_array.push_back(index_buffer[i]);
+				master_index_array.push_back(index_buffer[i] + master_index_base);
+			}
+			else if (type == 0x1402 || type == 0x1403)
+			{
+				index_array.push_back(index_buffer_short[i]);
+				master_index_array.push_back(index_buffer_short[i] + master_index_base);
+			}
+		}
+
+
+
+		save_mesh(&name[0], vertex_array, index_array);
+	}
+
+
+	printf("Loading %s as single ibo/vbo\r\n", glbFilename);
+	save_mesh(glbFilename, master_vertex_array, master_index_array);
 
 	return 0;
 }
@@ -635,7 +834,7 @@ int main(int argc, char *argv[])
 		gltf_load_base64_bin(argv[1], true);
 		break;
 	case FULL_BINARY:
-		glb_load(argv[1]);
+		glb_load(argv[1], true);
 		break;
 	}
 
