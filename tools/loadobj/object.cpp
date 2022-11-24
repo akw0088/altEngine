@@ -191,7 +191,7 @@ void Object::scale(float scalar)
 		}
 }
 
-void Object::create_index(int **index_array, unsigned int &num_index, int k)
+void Object::create_index(int **index_array, unsigned int &num_index, int k, bool winding)
 {
 	num_index = object[k].vec_face.size() * 3;
 	(*index_array) = new int [num_index];
@@ -199,9 +199,19 @@ void Object::create_index(int **index_array, unsigned int &num_index, int k)
 
 	for(int i = 0; i < object[k].vec_face.size(); i++)
 	{
-		(*index_array)[j++] = object[k].vec_face[i].vindex[2] - 1;
-		(*index_array)[j++] = object[k].vec_face[i].vindex[1] - 1;
-		(*index_array)[j++] = object[k].vec_face[i].vindex[0] - 1;
+
+		if (winding)
+		{
+			(*index_array)[j++] = object[k].vec_face[i].vindex[2] - 1;
+			(*index_array)[j++] = object[k].vec_face[i].vindex[1] - 1;
+			(*index_array)[j++] = object[k].vec_face[i].vindex[0] - 1;
+		}
+		else
+		{
+			(*index_array)[j++] = object[k].vec_face[i].vindex[0] - 1;
+			(*index_array)[j++] = object[k].vec_face[i].vindex[1] - 1;
+			(*index_array)[j++] = object[k].vec_face[i].vindex[2] - 1;
+		}
 	}
 }
 

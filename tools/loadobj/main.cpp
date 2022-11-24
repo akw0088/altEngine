@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 {
 	Object obj;
 	int *index_array = NULL;
-	
+	bool winding = false;
 
 	vertex_t *vertex_array = NULL;
 	size_t num_vertex;
@@ -23,19 +23,31 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
+
+
 	string file_name = argv[1];
 	float scalar;
 	sscanf(argv[2], "%f", &scalar);
+
+	if (scalar > 0)
+	{
+		winding = true;
+	}
+	else
+	{
+		winding = false;
+	}
+
+
 	cout << "Loading obj file " << file_name << endl;
 	obj.load(file_name);
 	obj.scale(scalar);
-
 
 	for (int k = 0; k < obj.object.size(); k++)
 	{
 		unsigned int num_index = 0;
 
-		obj.create_index(&index_array, num_index, k);
+		obj.create_index(&index_array, num_index, k, winding);
 		string ibo_name = string(obj.object[k].name) + ".ibo";
 		cout << "Writing index buffer for " + ibo_name << endl;
 		ofstream ibo(ibo_name.c_str(), ios::binary);

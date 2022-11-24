@@ -58,7 +58,7 @@ public:
 	void pass_count(string &line);
 	void pass_extract(string &line);
 
-	void create_index(int **index_array, unsigned int &num_index, int k);
+	void create_index(int **index_array, unsigned int &num_index, int k, bool winding);
 	void create_vertex(vertex_t **vertex_array, int k);
 	void scale(float scalar);
 
