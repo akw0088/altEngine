@@ -47,10 +47,10 @@ int convert(char *vbo, char *ibo, char *name)
 	unsigned int *max = (unsigned int *)vbo;
 	vertex_t *vert = (vertex_t *)(vbo + 4);
 	unsigned int *index = (unsigned int *)(ibo + 4);
-	
+
 	unsigned int num_index = *count;
 	unsigned int num_vert = *max;
-	
+
 
 	char file[128] = { 0 };
 
@@ -108,10 +108,10 @@ int convert(char *vbo, char *ibo, char *name)
 
 	for (unsigned int i = 0; i < num_index; i += 3)
 	{
-		fprintf(fp, "f %d/%d/%d %d/%d/%d %d/%d/%d\n", 
+		fprintf(fp, "f %d/%d/%d %d/%d/%d %d/%d/%d\n",
 			index[i + 0] + 1, index[i + 0] + 1, index[i + 0] + 1,
-			index[i + 2] + 1, index[i + 2] + 1, index[i + 2] + 1,
-			index[i + 1] + 1, index[i + 1] + 1, index[i + 1] + 1
+			index[i + 1] + 1, index[i + 1] + 1, index[i + 1] + 1,
+			index[i + 2] + 1, index[i + 2] + 1, index[i + 2] + 1
 		);
 	}
 
@@ -175,7 +175,22 @@ int main(int argc, char *argv[])
 		printf("Unable to open %s\r\n", argv[2]);
 		return 0;
 	}
-	convert(vbo, ibo, argv[2]);
+
+
+	char *name = argv[2];
+
+	for (int i = 0; i < strlen(name); i++)
+	{
+		if (name[i] == '.')
+		{
+			name[i] = '\0';
+			break;
+		}
+	}
+
+
+
+	convert(vbo, ibo, name);
 
 	return 0;
 }
