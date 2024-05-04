@@ -3670,6 +3670,141 @@ void make_torus(Graphics &gfx, int numc, int numt, float r1, float r2, float sca
 
 
 
+/*
+F(u,v) = (cos(u)*sin(v)*r, cos(v)*r, sin(u)*sin(v)*r)
+
+r = radius
+u = longitude [0 2pi]
+v = latitude [0 pi]
+*/
+vec3 func_sphere(float u, float v, float r)
+{
+	vec3 result;
+
+	result.x = cos(u) * sin(v) * r;
+	result.y = cos(v) * r;
+	result.z = sin(u) * sin(v) * r;
+
+	return result;
+}
+
+void make_sphere(float u_res, float v_res, float radius, int smooth_normals, vertex_t **vertex_array_in, int &num_vert, int **index_array_in)
+{
+	float u0 = 0.0;
+	float v0 = 0.0;
+	float uf = 2.0 * M_PI;
+	float vf = M_PI;
+
+	float u_step = (uf - u0) / u_res;
+	float v_step = (vf - v0) / v_res;
+
+	num_vert = 0;
+
+	// work through everything once to get a vertex count
+	for (int i = 0; i < u_res; i++)
+	{
+		for (int j = 0; j < v_res; j++)
+		{
+			// two triangles
+			num_vert += 6;
+		}
+	}
+
+	int num_vert_start = num_vert;
+	*vertex_array_in = new vertex_t[num_vert];
+	*index_array_in = new int[num_vert];
+
+	vertex_t *vertex_array = *vertex_array_in;
+	int *index_array = *index_array_in;
+
+	num_vert = 0;
+
+	for (int i = 0; i < u_res; i++)
+	{
+		for (int j = 0; j < v_res; j++)
+		{
+			float u = i * u_step + u0;
+			float v = j * v_step + v0;
+
+			float u_next = (i + 1 == u_res) ? uf : (i + 1) * u_step + u0;
+			float v_next = (j + 1 == v_res) ? vf : (j + 1) * v_step + v0;
+
+			vec3 p0 = func_sphere(u, v, radius);
+			vec3 p1 = func_sphere(u, v_next, radius);
+			vec3 p2 = func_sphere(u_next, v, radius);
+			vec3 p3 = func_sphere(u_next, v_next, radius);
+
+			vertex_t vert;
+
+			if (smooth_normals == 0)
+			{
+				vec3 s = p2 - p0;
+				vec3 t = p1 - p0;
+
+				vert.normal = vec3::crossproduct(s, t);
+			}
+
+			// should probably add texture coordinates
+
+
+			// triangle 1
+			vert.position = p0;
+			vert.texCoord0.x = u;
+			vert.texCoord0.y = v;
+			if (smooth_normals)
+				vert.normal = vert.position.normalize();
+
+			index_array[num_vert] = num_vert;
+			vertex_array[num_vert++] = vert;
+
+			vert.position = p1;
+			vert.texCoord0.x = u;
+			vert.texCoord0.y = v_next;
+			if (smooth_normals)
+				vert.normal = vert.position.normalize();
+			index_array[num_vert] = num_vert;
+			vertex_array[num_vert++] = vert;
+
+			vert.position = p2;
+			vert.texCoord0.x = u_next;
+			vert.texCoord0.y = v;
+			if (smooth_normals)
+				vert.normal = vert.position.normalize();
+			index_array[num_vert] = num_vert;
+			vertex_array[num_vert++] = vert;
+
+
+			// triangle 2
+			vert.position = p3;
+			vert.texCoord0.x = u_next;
+			vert.texCoord0.y = v_next;
+			if (smooth_normals)
+				vert.normal = vert.position.normalize();
+			index_array[num_vert] = num_vert;
+			vertex_array[num_vert++] = vert;
+
+			vert.position = p2;
+			vert.texCoord0.x = u_next;
+			vert.texCoord0.y = v;
+			if (smooth_normals)
+				vert.normal = vert.position.normalize();
+			index_array[num_vert] = num_vert;
+			vertex_array[num_vert++] = vert;
+
+			vert.position = p1;
+			vert.texCoord0.x = u;
+			vert.texCoord0.y = v_next;
+			if (smooth_normals)
+				vert.normal = vert.position.normalize();
+			index_array[num_vert] = num_vert;
+			vertex_array[num_vert++] = vert;
+
+		}
+	}
+
+}
+
+
 vec3 get_point(float lam1, float lam2, float lam3, vec3 &a,  vec3 &b, vec3 &c)
 {
 	vec3 v;
