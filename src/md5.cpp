@@ -322,7 +322,8 @@ int MD5::parse_joint(char *data, md5_joint_t *joint, int num_joint)
 
 	int i = 0;
 
-	pdata = strchr(data, '\"');
+	pdata = data;
+	pdata = strchr(pdata + 1, '\"');
 	while (pdata)
 	{
 		if ( 8 == sscanf(pdata, "%255s %d ( %f %f %f ) ( %f %f %f )", name, &parent, &x, &y, &z, &qx, &qy, &qz) )
@@ -343,6 +344,8 @@ int MD5::parse_joint(char *data, md5_joint_t *joint, int num_joint)
 			debugf("Error: Couldnt read joint %d\n", i);
 			return 1;
 		}
+
+		pdata = strstr(pdata, "\n");
 
 		if (i == num_joint)
 			break;
