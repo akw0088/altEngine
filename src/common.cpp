@@ -5560,3 +5560,437 @@ void make_cone(float radius, float height, vec3& center, int step, vertex_t* tri
 		triangles[num_triangle++] = points[a];
 	}
 }
+
+
+// quickhull 2d -- will do 3d next, but figure should do 2d first
+
+#define MAX_POINT 4096
+typedef struct
+{
+	vec2 a;
+	vec2 b;
+} line_t;
+
+
+typedef struct
+{
+	vec2 a;
+	vec2 b;
+	vec2 c;
+} triangle_2d_t;
+
+int quick_hull(vec2 *point, int num_point, vec2 *hull, int &num_hull);
+int find_hull(line_t &line, vec2 *point, int num_point, vec2 *hull, int &num_hull);
+
+
+float det(vec2 &p1, vec2 &p2, vec2 &p3)
+{
+	return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+}
+
+// essentially just the determinant (see above) 
+float point_above_line(vec2 &p, line_t &line)
+{
+	return (line.b.x - line.a.x) * (p.y - line.a.y) - (line.b.y - line.a.y) * (p.x - line.a.x);
+}
+
+float triangle_area(float x1, float y1, float x2, float y2, float x3, float y3)
+{
+	return (float)fabs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2.0);
+}
+
+bool point_in_triangle(vec2 &p, triangle_2d_t &tri)
+{
+	float d1 = det(p, tri.a, tri.b);
+	float d2 = det(p, tri.b, tri.c);
+	float d3 = det(p, tri.c, tri.a);
+
+	int all_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+	int all_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+	return !(all_neg && all_pos);
+}
+
+
+
+void closest_point_to_line(vec2 &p, line_t &line, float &t, vec2 &d)
+{
+	vec2 ab = line.b - line.a;
+
+	t = ((p - line.a) * ab) / (ab * ab);
+
+	if (t < 0.0f)
+	{
+		t = 0.0f;
+	}
+	if (t > 1.0f)
+	{
+		t = 1.0f;
+	}
+
+	d = line.a + ab * t;
+}
+
+
+float distance_to_line(vec2 &p, line_t &line)
+{
+	return fabs((line.b.x - line.a.x) * (p.y - line.a.y) - (p.x - line.a.x) * (line.b.y - line.a.y)) \
+		/ sqrt(line.b.x - line.a.x * (line.b.x - line.a.x) + (line.b.y - line.a.y) * (line.b.y - line.a.y));
+}
+
+
+
+int add_point(vec2 *hull, int &num_hull, vec2 &p)
+{
+	int exists = 0;
+
+	// check if these points already exist in the hull before adding them
+	for (int i = 0; i < num_hull; i++)
+	{
+		if (hull[i].x == p.x &&
+			hull[i].y == p.y)
+		{
+			exists = 1;
+			break;
+		}
+	}
+
+	if (exists == 0)
+	{
+		printf("Adding point to hull (%f, %f)\n", p.x, p.y);
+		hull[num_hull++] = p;
+		return 1;
+	}
+
+	return 0;
+}
+
+int add_line(vec2 *hull, int &num_hull, line_t &line)
+{
+	int a_exists = 0;
+	int b_exists = 0;
+	int ret = 0;
+
+	// check if these points already exist in the hull before adding them
+	for (int i = 0; i < num_hull; i++)
+	{
+		if (hull[i].x == line.a.x &&
+			hull[i].y == line.a.y)
+		{
+			a_exists = 1;
+		}
+
+		if (hull[i].x == line.b.x &&
+			hull[i].y == line.b.y)
+		{
+			b_exists = 1;
+		}
+
+		if (a_exists && b_exists)
+		{
+			break;
+		}
+	}
+
+	if (a_exists == 0)
+	{
+		printf("Adding point to hull (%f, %f)\n", line.a.x, line.a.y);
+		hull[num_hull++] = line.a;
+		ret++;
+	}
+	if (b_exists == 0)
+	{
+		printf("Adding point to hull (%f, %f)\n", line.b.x, line.b.y);
+		hull[num_hull++] = line.b;
+		ret++;
+	}
+
+	return ret;
+}
+
+
+int quick_hull(vec2 *point, int num_point, vec2 *hull, int &num_hull)
+{
+	float max_point = FLT_MIN;
+	float min_point = FLT_MAX;
+	int max_index = -1;
+	int min_index = -1;
+
+	if (num_point < 3)
+	{
+		return -1;
+	}
+
+	// find max/min point
+	for (int i = 0; i < num_point; i++)
+	{
+		if (point[i].x > max_point)
+		{
+			max_point = point[i].x;
+			max_index = i;
+		}
+		if (point[i].x < min_point)
+		{
+			min_point = point[i].x;
+			min_index = i;
+		}
+	}
+
+
+	// if duplicates exist, find max/min y as secondary criteria
+	for (int i = 0; i < num_point; i++)
+	{
+		if (point[i].x == max_point)
+		{
+			if (point[i].y > point[max_index].y)
+			{
+				max_index = i;
+			}
+		}
+		if (point[i].x == min_point)
+		{
+			if (point[i].y < point[min_index].y)
+			{
+				min_index = i;
+			}
+		}
+	}
+
+	line_t line;
+
+	line.a = vec2(point[min_index].x, point[min_index].y);
+	line.b = vec2(point[max_index].x, point[max_index].y);
+
+	printf("max line (%f, %f) (%f, %f)\n", line.a.x, line.a.y, line.b.x, line.b.y);
+	add_line(hull, num_hull, line);
+
+	// divide point into two sets above/below line
+	vec2 point_above[4096];
+	int num_above = 0;
+	int j = 0;
+	for (int i = 0; i < num_point; i++)
+	{
+		if (point_above_line(point[i], line) >= 0)
+		{
+			point_above[j++] = point[i];
+			printf("Point above (%f, %f)\n", point[i].x, point[i].y);
+		}
+	}
+	num_above = j;
+
+
+	// divide point into two sets above/below line
+	vec2 point_below[4096];
+	int num_below = 0;
+	j = 0;
+	for (int i = 0; i < num_point; i++)
+	{
+		if (point_above_line(point[i], line) < 0)
+		{
+			point_below[j++] = point[i];
+			printf("Point below (%f, %f)\n", point[i].x, point[i].y);
+		}
+	}
+	num_below = j;
+
+
+	// make recursive call
+	find_hull(line, point_above, num_above, hull, num_hull);
+	find_hull(line, point_below, num_below, hull, num_hull);
+
+	return 0;
+}
+
+int find_hull(line_t &line, vec2 *point, int num_point, vec2 *hull, int &num_hull)
+{
+	float max_dist = -1000.0f;
+	int max_index = -1;
+
+
+	if (num_point == 0)
+	{
+		return -1;
+	}
+
+	// find furthest point to from line
+	for (int i = 0; i < num_point; i++)
+	{
+		if (point[i].x == line.a.x && point[i].y == line.a.y)
+		{
+			// dont consider line points
+			continue;
+		}
+
+		if (point[i].x == line.b.x && point[i].y == line.b.y)
+		{
+			// dont consider line points
+			continue;
+		}
+
+		float dist = distance_to_line(point[i], line);
+
+		if (dist > max_dist)
+		{
+			max_dist = dist;
+			max_index = i;
+		}
+	}
+
+
+	if (max_index == -1)
+	{
+		// no way to make triangle
+		return 0;
+	}
+
+	// make a triangle with the furthest point from line
+	triangle_2d_t tri;
+
+	tri.a = line.a;
+	tri.b = line.b;
+	tri.c = point[max_index];
+
+	// calculate area to be sure we dont have identical points
+	float area = triangle_area(tri.a.x, tri.a.y, tri.b.x, tri.b.y, tri.c.x, tri.c.y);
+	if (area == 0.0)
+	{
+		// no way to make triangle, this check probably isnt needed anymore, but keeping for good measure
+		return 0;
+	}
+
+
+	printf("Triangle point (%f, %f)\n", point[max_index].x, point[max_index].y);
+	add_point(hull, num_hull, point[max_index]);
+
+
+	// remove points inside triangle from consideration
+	for (int i = 0; i < num_point; i++)
+	{
+		if (point_in_triangle(point[i], tri))
+		{
+			if (point[i].x == tri.a.x && point[i].y == tri.a.y)
+			{
+				// dont drop triangle points
+				continue;
+			}
+			else if (point[i].x == tri.b.x && point[i].y == tri.b.y)
+			{
+				// dont drop triangle points
+				continue;
+			}
+			else if (point[i].x == tri.c.x && point[i].y == tri.c.y)
+			{
+				// dont drop triangle points
+				continue;
+			}
+
+
+			printf("Dropping point (%f, %f)\n", point[i].x, point[i].y);
+			// can remove this point from potential hull set
+			// NaN in comparisons is always false, and is always not equal
+			point[i].x = NAN;
+			point[i].y = NAN;
+		}
+	}
+
+
+	// make two lines from the triangles sides and repeat
+	line_t line_a;
+	line_t line_b;
+
+	line_a.a = tri.a;
+	line_a.b = tri.c;
+	line_b.a = tri.b;
+	line_b.b = tri.c;
+
+	vec2 point_above1[MAX_POINT];
+	vec2 point_below1[MAX_POINT];
+	int num_above1 = 0;
+	int num_below1 = 0;
+	int j = 0;
+	int k = 0;
+	for (int i = 0; i < num_point; i++)
+	{
+		if (point[i].x == tri.a.x && point[i].y == tri.a.y)
+		{
+			// dont add triangle points
+			continue;
+		}
+		else if (point[i].x == tri.b.x && point[i].y == tri.b.y)
+		{
+			// dont add triangle points
+			continue;
+		}
+		else if (point[i].x == tri.c.x && point[i].y == tri.c.y)
+		{
+			// dont add triangle points
+			continue;
+		}
+
+
+		if (point_above_line(point[i], line_a) >= 0)
+		{
+			point_above1[j++] = point[i];
+		}
+
+		// do seperate comparison so the NaN's go away
+		if (point_above_line(point[i], line_a) < 0)
+		{
+			point_below1[k++] = point[i];
+		}
+	}
+	num_above1 = j;
+	num_below1 = k;
+
+
+	vec2 point_above2[MAX_POINT];
+	vec2 point_below2[MAX_POINT];
+	int num_above2 = 0;
+	int num_below2 = 0;
+	j = 0;
+	k = 0;
+	for (int i = 0; i < num_point; i++)
+	{
+		if (point[i].x == tri.a.x && point[i].y == tri.a.y)
+		{
+			// dont add triangle points
+			continue;
+		}
+		else if (point[i].x == tri.b.x && point[i].y == tri.b.y)
+		{
+			// dont add triangle points
+			continue;
+		}
+		else if (point[i].x == tri.c.x && point[i].y == tri.c.y)
+		{
+			// dont add triangle points
+			continue;
+		}
+
+		if (point_above_line(point[i], line_b) > 0)
+		{
+			point_above2[j++] = point[i];
+		}
+
+		// do seperate comparison so the NaN's go away
+		if (point_above_line(point[i], line_b) < 0)
+		{
+			point_below2[k++] = point[i];
+		}
+	}
+	num_above2 = j;
+	num_below2 = k;
+
+	// process each side of both lines, interior points will die due to NaN
+	if (num_above1)
+		find_hull(line_a, point_above1, num_above1, hull, num_hull);
+	if (num_below1)
+		find_hull(line_a, point_below1, num_below1, hull, num_hull);
+	if (num_above2)
+		find_hull(line_b, point_above2, num_above2, hull, num_hull);
+	if (num_below2)
+		find_hull(line_b, point_below2, num_below2, hull, num_hull);
+
+	return 0;
+}
+
