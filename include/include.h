@@ -105,8 +105,7 @@
 
 #endif
 
-#ifdef __OBJC__
-
+#ifdef __APPLE__
 //	#define glGenVertexArrays glGenVertexArraysAPPLE
 //	#define glBindVertexArray glBindVertexArrayAPPLE
 //	#define glDeleteVertexArrays glDeleteVertexArraysAPPLE
@@ -124,7 +123,7 @@
 		void fullscreen(Display *display, Window w);
 	#else
 	   	#define GLX_GLXEXT_PROTOTYPES
-		#ifdef __OBJC__
+		#ifdef __APPLE__
             #define __gl_h_
             #include <OpenGL/gl3.h>
             #include <OpenGL/glext.h>
@@ -137,7 +136,7 @@
 		#endif
 #endif
 
-#ifndef __OBJC__
+#ifndef __APPLE__
 	//mac has xquartz and can run xwindow apps
 	#include <X11/Xlib.h>
 	#include <X11/Xutil.h>
@@ -163,13 +162,17 @@
 #endif
 
 
+#ifdef __APPLE__
+#define RGB(r,g,b)          ((int)(((char)(r)|((int)((char)(g))<<8))|(((int)(char)(b))<<16)))
+#endif
+
 #define MAX(x,y) (x) > (y) ? (x) : (y)
 #define MIN(x,y) (x) < (y) ? (x) : (y)
 #define SWAP(x, y, T) {T temp = x; x = y; y = temp;}
 #define SET_BIT(word,bit_flag)  ((word)=((word) | (bit_flag)))
 #define RESET_BIT(word,bit_flag) ((word)=((word) & (~bit_flag)))
 
-#ifndef __OBJC__
+#ifndef __APPLE__
 //audio
 #include <AL/al.h>
 #include <AL/alc.h>

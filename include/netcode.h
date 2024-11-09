@@ -17,6 +17,10 @@
 #ifndef NETCODE_H
 #define NETCODE_H
 
+#ifdef SERIAL
+#include "serial.h"
+#endif
+
 class Netcode
 {
 	friend class Engine;

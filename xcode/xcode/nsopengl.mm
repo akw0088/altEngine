@@ -52,14 +52,25 @@ static void drawAnObject ()
 {
     NSPoint pos;
     NSPoint delta;
-
+    NSPoint center;
+    static NSPoint last_pos = pos;
+    
     //Origin is lower left, we get mouse messages outside of NSView bounds
     pos = [theEvent locationInWindow];
-    delta.x = [self bounds].size.width / 2 - pos.x;
-    delta.y = [self bounds].size.height / 2 - pos.y;
-    [altEngine mousepos: pos.x y: pos.y deltax: pos.x deltay: delta.y];
+//    center = [self convertPoint: center fromView: nil]
+
+    NSRect frame = self.window.frame;
     
-    //center = [self convertPoint: center fromView: nil];
+    center.x = frame.origin.x + frame.size.width / 2;
+    center.y = frame.origin.y + frame.size.height / 2;
+
+    delta.x = center.x - pos.x;
+    delta.y = center.y - pos.y;
+
+    [altEngine mousepos: pos.x y: pos.y deltax: delta.x deltay: delta.y];
+    last_pos = pos;
+
+//    center = [self convertPoint: center fromView: nil];
     //CGWarpMouseCursorPosition(center);
 }
 
@@ -134,32 +145,32 @@ static void drawAnObject ()
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
-    [altEngine keypress: "mouse1" pressed:true];
+    [altEngine keypress: "leftbutton" pressed:true];
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-    [altEngine keypress: "mouse1" pressed:false];
+    [altEngine keypress: "leftbutton" pressed:false];
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
-    [altEngine keypress: "mouse2" pressed:true];
+    [altEngine keypress: "rightButton" pressed:true];
 }
 
 - (void)rightMouseUp:(NSEvent *)theEvent
 {
-    [altEngine keypress: "mouse2" pressed:false];
+    [altEngine keypress: "rightButton" pressed:false];
 }
 
 - (void)otherMouseDown:(NSEvent *)theEvent
 {
-    [altEngine keypress: "mouse3" pressed:true];
+    [altEngine keypress: "middleButton" pressed:true];
 }
 
 - (void)otherMouseUp:(NSEvent *)theEvent
 {
-    [altEngine keypress: "mouse3" pressed:false];
+    [altEngine keypress: "middleButton" pressed:false];
 }
 
 

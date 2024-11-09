@@ -26,6 +26,18 @@ Windows:
 	(Sometimes I check in stuff that doesnt compile though, and I dont always update the project files diligently, but it should compile most of the time)
 
 	To run it you'll need the "media" folder, which you can get from the download links
+ 
+ Mac OSX
+    Install homebrew
+    Install glew
+        brew install glew
+    Xcode should compile
+    Set working directory to a release directory in Product -> Scheme -> Edit Scheme
+        Options Tab
+            Working Directory
+
+    Then running it should be fine
+    
 
 ## Misc info
 
