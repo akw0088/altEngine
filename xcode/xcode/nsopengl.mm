@@ -54,18 +54,58 @@ static void drawAnObject ()
     NSPoint delta;
     NSPoint center;
     static NSPoint last_pos = pos;
+    NSRect frame = self.window.frame;
+    
+    NSWindow *window = self.window;
+    NSRect windowFrame = window.frame;
+    NSPoint windowCenter = NSMakePoint(NSMidX(windowFrame), NSMidY(windowFrame));
+    NSScreen *screen = window.screen;
+    NSRect screenFrame = screen.frame;
+    NSPoint screenCenter = NSMakePoint(NSMidX(screenFrame), NSMidY(screenFrame));
+
+//    NSLog(@"Window Center: %@", NSStringFromPoint(windowCenter));
+//    NSLog(@"Screen Center: %@", NSStringFromPoint(screenCenter));
+    
     
     //Origin is lower left, we get mouse messages outside of NSView bounds
     pos = [theEvent locationInWindow];
 //    center = [self convertPoint: center fromView: nil]
 
-    NSRect frame = self.window.frame;
+    if (pos.x >= frame.size.width)
+    {
+        pos.x = frame.size.width - 1;
+    }
+
+    if (pos.y >= frame.size.height)
+    {
+        pos.y = frame.size.height - 1;
+    }
+    
+    if (pos.x < 0)
+    {
+        pos.x = 0;
+    }
+
+    if (pos.y < 0)
+    {
+        pos.y = 0;
+    }
+    
+    
+    // flip so zero is upper left corner instead of lower left
+    pos.y = frame.size.height - pos.y - 1;
+    
     
     center.x = frame.origin.x + frame.size.width / 2;
     center.y = frame.origin.y + frame.size.height / 2;
-
-    delta.x = center.x - pos.x;
-    delta.y = center.y - pos.y;
+    
+   
+    NSPoint screen_center = [window convertPointFromScreen:windowCenter];
+    
+    
+    delta.x = screen_center.x - pos.x;
+    delta.y = screen_center.y - pos.y;
+    
 
     [altEngine mousepos: pos.x y: pos.y deltax: delta.x deltay: delta.y];
     last_pos = pos;

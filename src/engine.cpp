@@ -162,6 +162,11 @@ Engine::Engine() :
 	render_mode = MODE_FORWARD;	// Render directly to video output buffer
 #endif
     
+    
+#ifdef __APPLE__
+    render_mode = MODE_FORWARD;    // Render directly to video output buffer
+#endif
+    
 	raw_mouse = false;			// Enable raw mouse input (USB Human Interface Device events versus WM_MOUSE messages)
 	ssao_level = 1.0f;			// level of screen space ambient occulsion (SSAO)
 	object_level = 1.0f;		// parameter to SSAO
@@ -4838,29 +4843,6 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 {
 	static bool once = false;
 
-    printf("x = %d y = %d deltax = %d deltay = %d\r\n", x, y, deltax, deltay);
-    
-    if (x >= gfx.width)
-    {
-        x = gfx.width;
-    }
-
-    if (y >= gfx.height)
-    {
-        y = gfx.height;
-    }
-    
-    if (x < 0)
-    {
-        x = 0;
-    }
-
-    if (y < 0)
-    {
-        y = 0;
-    }
-
-    
     
 	if ((q3map.loaded == false && hlmap.loaded == false && q1map.loaded == false) || menu.ingame == true || menu.console == true || menu.chatmode == true || pick_mode == true)
 	{
