@@ -31,6 +31,10 @@ typedef HANDLE handle_t;
 typedef int handle_t;
 #endif
 
+#ifdef __APPLE__
+typedef int handle_t;
+#endif
+
 int serial_init(char *port, handle_t *handle);
 int serial_write(handle_t handle, char *data, int size);
 int serial_read(handle_t handle, char *data, int size);

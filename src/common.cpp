@@ -3669,7 +3669,6 @@ void make_torus(Graphics &gfx, int numc, int numt, float r1, float r2, float sca
 }
 
 
-
 /*
 F(u,v) = (cos(u)*sin(v)*r, cos(v)*r, sin(u)*sin(v)*r)
 
@@ -3803,7 +3802,210 @@ void make_sphere(float u_res, float v_res, float radius, int smooth_normals, ver
 
 		}
 	}
+}
 
+
+vec3 func_ellipsoid(float u, float v, float r, float a, float b, float c)
+{
+	vec3 result;
+
+	result.x = a * sin(u) * sin(v);
+	result.y = b * cos(u);
+	result.z = c * sin(u) * cos(v);
+
+	return result;
+}
+
+void make_ellipsoid(float u_res, float v_res, float radius, int smooth_normals, vertex_t **vertex_array_in, int &num_vert, int **index_array_in)
+{
+	float u0 = 0.0;
+	float v0 = 0.0;
+	float uf = 2.0 * M_PI;
+	float vf = M_PI;
+
+	float u_step = (uf - u0) / u_res;
+	float v_step = (vf - v0) / v_res;
+
+	num_vert = 0;
+
+	// work through everything once to get a vertex count
+	for (int i = 0; i < u_res; i++)
+	{
+		for (int j = 0; j < v_res; j++)
+		{
+			// two triangles
+			num_vert += 6;
+		}
+	}
+
+	int num_vert_start = num_vert;
+	*vertex_array_in = new vertex_t[num_vert];
+	*index_array_in = new int[num_vert];
+
+	vertex_t *vertex_array = *vertex_array_in;
+	int *index_array = *index_array_in;
+
+	num_vert = 0;
+
+	float tex_scale_x = 1.0;
+	float tex_scale_y = 0.5;
+	float tex_pos_x = 0;
+	float tex_pos_y = 0;
+
+
+	float a = 5.0;
+	float b = 3.0;
+	float c = 5.0;
+
+	for (int i = 0; i < u_res; i++)
+	{
+		for (int j = 0; j < v_res; j++)
+		{
+			int flip = 0;
+
+
+			float u = i * u_step + u0;
+			float v = j * v_step + v0;
+
+			float u_next = (i + 1 == u_res) ? uf : (i + 1) * u_step + u0;
+			float v_next = (j + 1 == v_res) ? vf : (j + 1) * v_step + v0;
+
+			vec3 p0 = func_ellipsoid(u, v, radius, a, b, c);
+			vec3 p1 = func_ellipsoid(u, v_next, radius, a, b, c);
+			vec3 p2 = func_ellipsoid(u_next, v, radius, a, b, c);
+			vec3 p3 = func_ellipsoid(u_next, v_next, radius, a, b, c);
+
+			vertex_t vert;
+
+			if (smooth_normals == 0)
+			{
+				vec3 s = p2 - p0;
+				vec3 t = p1 - p0;
+
+				vert.normal = vec3::crossproduct(s, t);
+			}
+
+			if (vert.normal * p0 < 0)
+				flip = 1;
+
+
+
+			if (flip == 0)
+			{
+				// triangle 1
+				vert.position = p0;
+				vert.texCoord0.x = u * tex_scale_x + tex_pos_x;
+				vert.texCoord0.y = v * tex_scale_y + tex_pos_y;
+
+				if (smooth_normals)
+					vert.normal = vert.position.normalize();
+
+				index_array[num_vert] = num_vert;
+				vertex_array[num_vert++] = vert;
+
+				vert.position = p1;
+				vert.texCoord0.x = u      * tex_scale_x + tex_pos_x;
+				vert.texCoord0.y = v_next * tex_scale_y + tex_pos_y;
+				if (smooth_normals)
+					vert.normal = vert.position.normalize();
+				index_array[num_vert] = num_vert;
+				vertex_array[num_vert++] = vert;
+
+				vert.position = p2;
+				vert.texCoord0.x = u_next * tex_scale_x + tex_pos_x;
+				vert.texCoord0.y = v      * tex_scale_y + tex_pos_y;
+				if (smooth_normals)
+					vert.normal = vert.position.normalize();
+				index_array[num_vert] = num_vert;
+				vertex_array[num_vert++] = vert;
+
+
+				// triangle 2
+				vert.position = p3;
+				vert.texCoord0.x = u_next * tex_scale_x + tex_pos_x;
+				vert.texCoord0.y = v_next * tex_scale_y + tex_pos_y;
+				if (smooth_normals)
+					vert.normal = vert.position.normalize();
+				index_array[num_vert] = num_vert;
+				vertex_array[num_vert++] = vert;
+
+				vert.position = p2;
+				vert.texCoord0.x = u_next * tex_scale_x + tex_pos_x;
+				vert.texCoord0.y = v	  * tex_scale_y + tex_pos_y;
+				if (smooth_normals)
+					vert.normal = vert.position.normalize();
+				index_array[num_vert] = num_vert;
+				vertex_array[num_vert++] = vert;
+
+				vert.position = p1;
+				vert.texCoord0.x = u      * tex_scale_x + tex_pos_x;
+				vert.texCoord0.y = v_next * tex_scale_y + tex_pos_y;
+				if (smooth_normals)
+					vert.normal = vert.position.normalize();
+				index_array[num_vert] = num_vert;
+				vertex_array[num_vert++] = vert;
+			}
+			else
+			{
+				// triangle 1
+				vert.position = p0;
+				vert.texCoord0.x = u * tex_scale_x + tex_pos_x;
+				vert.texCoord0.y = v * tex_scale_y + tex_pos_y;
+				if (smooth_normals)
+					vert.normal = vert.position.normalize();
+
+				index_array[num_vert] = num_vert;
+				vertex_array[num_vert++] = vert;
+
+				vert.position = p2;
+				vert.texCoord0.x = u_next * tex_scale_x + tex_pos_x;
+				vert.texCoord0.y = v	  * tex_scale_y + tex_pos_y;
+				if (smooth_normals)
+					vert.normal = vert.position.normalize();
+				index_array[num_vert] = num_vert;
+				vertex_array[num_vert++] = vert;
+
+				vert.position = p1;
+				vert.texCoord0.x = u      * tex_scale_x + tex_pos_x;
+				vert.texCoord0.y = v_next * tex_scale_y + tex_pos_y;
+				if (smooth_normals)
+					vert.normal = vert.position.normalize();
+				index_array[num_vert] = num_vert;
+				vertex_array[num_vert++] = vert;
+
+
+				// triangle 2
+				vert.position = p3;
+				vert.texCoord0.x = u_next * tex_scale_x + tex_pos_x;
+				vert.texCoord0.y = v_next * tex_scale_y + tex_pos_y;
+				if (smooth_normals)
+					vert.normal = vert.position.normalize();
+				index_array[num_vert] = num_vert;
+				vertex_array[num_vert++] = vert;
+
+				vert.position = p1;
+				vert.texCoord0.x = u      * tex_scale_x + tex_pos_x;
+				vert.texCoord0.y = v_next * tex_scale_y + tex_pos_y;
+				if (smooth_normals)
+					vert.normal = vert.position.normalize();
+				index_array[num_vert] = num_vert;
+				vertex_array[num_vert++] = vert;
+
+				vert.position = p2;
+				vert.texCoord0.x = u_next * tex_scale_x + tex_pos_x;
+				vert.texCoord0.y = v	  * tex_scale_y + tex_pos_y;
+				if (smooth_normals)
+					vert.normal = vert.position.normalize();
+				index_array[num_vert] = num_vert;
+				vertex_array[num_vert++] = vert;
+
+
+			}
+
+		}
+	}
+
+>>>>>>> 1fca79dd0f9f78d72e2b6da194b1d137b80e84ee
 }
 
 

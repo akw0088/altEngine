@@ -28,7 +28,7 @@ unsigned int ParticleUpdate::max_particles = 5000;
 
 int mFont::init(Graphics *gfx)
 {
-#ifdef __OBJC__
+#ifdef __APPLE__
 	if (Shader::init(gfx, "media/glsl/ver410/font.vs", NULL, "media/glsl/ver410/font.fs"))
 	{
 		program_handle = -1;
@@ -75,7 +75,7 @@ void mFont::Params(char c, float x, float y, float scale, vec3 &color)
 
 int Global::init(Graphics *gfx)
 {
-#ifdef __OBJC__
+#ifdef __APPLE__
 	if (Shader::init(gfx, "media/glsl/ver410/global.vs", NULL, "media/glsl/ver410/global.fs"))
 	{
 		program_handle = -1;
@@ -128,7 +128,7 @@ int mLight2::init(Graphics *gfx, bool pixel)
 	m_diffuse_min = 0.0;
 	m_specular_min = 0.0;
 	//"media/glsl/mlighting3.gs"
-#ifdef __OBJC__
+#ifdef __APPLE__
 	if (Shader::init(gfx, "media/glsl/ver410/mlighting3.vs", "media/glsl/ver410/mlighting3.gs", "media/glsl/ver410/mlighting3.fs"))
 	{
 		program_handle = -1;
@@ -814,7 +814,7 @@ void mLight2::rgbgen_wave_square(float amplitude, float phase, float freq, int t
 
 int Post::init(Graphics *gfx)
 {
-#ifdef __OBJC__
+#ifdef __APPLE__
     if (Shader::init(gfx, "media/glsl/ver410/post.vs", NULL, "media/glsl/ver410/post.fs"))
     {
         program_handle = -1;
@@ -914,7 +914,7 @@ int mLight3::init(Graphics *gfx)
 #ifdef DIRECTX
 	Shader::init(gfx, "media/hlsl/mlighting3.vsh", NULL, "media/hlsl/mlighting3.psh");
 #else
-#ifdef __OBJC__
+#ifdef __APPLE__
 	if (Shader::init(gfx, "media/glsl/ver410/mlight3.vs", "media/glsl/ver410/mlight3.gs", "media/glsl/ver410/mlight3.fs"))
 	{
 		program_handle = -1;
@@ -1005,7 +1005,7 @@ int ShadowMap::init(Graphics *gfx)
 {
 #ifndef DIRECTX
 
-#ifdef __OBJC__
+#ifdef __APPLE__
 	if (Shader::init(gfx, "media/glsl/ver410/shadow.vs", NULL, "media/glsl/ver410/shadow.fs"))
 	{
 		program_handle = -1;

@@ -161,9 +161,12 @@ Engine::Engine() :
 #else
 	render_mode = MODE_FORWARD;	// Render directly to video output buffer
 #endif
-
-
-
+    
+    
+#ifdef __APPLE__
+    render_mode = MODE_FORWARD;    // Render directly to video output buffer
+#endif
+    
 	raw_mouse = false;			// Enable raw mouse input (USB Human Interface Device events versus WM_MOUSE messages)
 	ssao_level = 1.0f;			// level of screen space ambient occulsion (SSAO)
 	object_level = 1.0f;		// parameter to SSAO
@@ -333,7 +336,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 
 
-#ifndef __OBJC__
+#ifndef __APPLE__
 #ifdef WIN32
 #ifndef DEDICATED
 	WAVEFORMATEX wf;
@@ -478,17 +481,21 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	sprintf(server_comport, "/dev/ttyS1");
 	sprintf(client_comport, "/dev/ttyS2");
 #endif
-	char *server_com = strstr(cmdline, "server_com");
-	if (server_com)
-	{
-		sprintf(server_comport, "%s", server_com + strlen("server_com "));
-	}
-
-	char *client_com = strstr(cmdline, "client_com");
-	if (client_com)
-	{
-		sprintf(client_comport, "%s", client_com + strlen("client_com "));
-	}
+    
+    if (cmdline != NULL)
+    {
+        char *server_com = strstr(cmdline, "server_com");
+        if (server_com)
+        {
+            sprintf(server_comport, "%s", server_com + strlen("server_com "));
+        }
+        
+        char *client_com = strstr(cmdline, "client_com");
+        if (client_com)
+        {
+            sprintf(client_comport, "%s", client_com + strlen("client_com "));
+        }
+    }
 
 
 
@@ -4836,6 +4843,7 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 {
 	static bool once = false;
 
+    
 	if ((q3map.loaded == false && hlmap.loaded == false && q1map.loaded == false) || menu.ingame == true || menu.console == true || menu.chatmode == true || pick_mode == true)
 	{
 		float devicex = (float)x / gfx.width;
@@ -4900,6 +4908,10 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 #endif
 		}
 
+#ifdef __APPLE__
+        gfx.swap();
+#endif
+        
 		once = true;
 
 		return false;
@@ -5250,6 +5262,10 @@ void Engine::keypress(char *key, bool pressed)
 		else
 		{
 			input.jump = pressed;
+#ifdef __APPLE__
+            // enter should advance the menu
+            k = 14;
+#endif
 		}
 	}
 	if (strcmp("attack", cmd) == 0)
@@ -5673,8 +5689,10 @@ void Engine::resize(int width, int height)
 	gfx.CreateFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, 0, false);
 
 
-
-#ifdef WIN32
+#ifdef __APPLE__
+    gfx.swap();
+#endif
+#ifndef WIN32
 #ifndef VULKAN
 	// This should probably be in render
 	if (initialized && q3map.loaded == false)

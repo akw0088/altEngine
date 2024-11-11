@@ -220,7 +220,7 @@ public:
 	HDC	hdc;
 #endif
 #ifndef WIN32
-#ifndef __OBJC__
+#ifndef __APPLE__
 	Display	*display;
 	Window	window;	
 	XFontStruct	*font;

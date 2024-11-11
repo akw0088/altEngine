@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "Engine::mousepos:engine.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "y">
+            </PersistentString>
+            <PersistentString
+               value = "gfx.height">
+            </PersistentString>
+            <PersistentString
+               value = "deltax">
+            </PersistentString>
+            <PersistentString
+               value = "x">
+            </PersistentString>
+            <PersistentString
+               value = "gfx.width">
+            </PersistentString>
+            <PersistentString
+               value = "deltay">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>

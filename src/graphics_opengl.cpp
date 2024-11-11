@@ -114,7 +114,11 @@ void Graphics::swap()
 #ifdef __linux__
 	glXSwapBuffers(display, window);
 #endif
-
+#ifdef __APPLE__
+    glFlush();
+    glFinish();
+#endif
+    
 #ifdef ERROR_CHECK
 	error_check();
 #endif
@@ -994,7 +998,7 @@ int Graphics::checkFramebuffer()
 {
 	GLenum fboStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
 #ifndef MACOS
-#ifndef __OBJC__
+#ifndef __APPLE__
 	if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
 	{
 		printf("Render to texture failed\n");
@@ -1047,14 +1051,14 @@ int Graphics::CreateFramebuffer(int width, int height, unsigned int &fbo, unsign
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	if (multisample > 0)
 	{
-#ifndef __OBJC__
+#ifndef __APPLE__
 		glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, multisample, GL_RGB16F, width, height, GL_TRUE);
 #endif
         //		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, multisample, GL_RGB16F, width, height, GL_FALSE);
 	}
 	else
 	{
-#ifndef __OBJC__
+#ifndef __APPLE__
 		glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB16F, width, height);
 #endif
         //	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
@@ -1068,13 +1072,13 @@ int Graphics::CreateFramebuffer(int width, int height, unsigned int &fbo, unsign
 
 		if (multisample > 0)
 		{
-#ifndef __OBJC__
+#ifndef __APPLE__
 			glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, multisample, GL_RGB32F, width, height, GL_TRUE);
 #endif
         }
 		else
 		{
-#ifndef __OBJC__
+#ifndef __APPLE__
 			glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, width, height);
 #endif
             

@@ -151,3 +151,46 @@ void serial_close(handle_t handle)
 }
 
 #endif
+
+
+#ifdef __APPLE__
+int serial_init(char *port, handle_t *handle)
+{
+    int fd;
+
+    fd = open(port, O_RDWR | O_NOCTTY);
+
+    if (fd == -1)
+    {
+        perror("open failed");
+        return -1;
+    }
+
+    // set baud rate in apple fashion here
+
+    *handle = fd;
+
+    return 0;
+}
+
+int serial_write(handle_t handle, char *data, int size)
+{
+    int fd = handle;
+
+    return write(fd, data, size);
+}
+
+int serial_read(handle_t handle, char *data, int size)
+{
+    int fd = handle;
+
+    return read(fd, data, size);
+}
+
+void serial_close(handle_t handle)
+{
+    int fd = handle;
+
+    close(fd);
+}
+#endif

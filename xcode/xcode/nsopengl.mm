@@ -52,14 +52,65 @@ static void drawAnObject ()
 {
     NSPoint pos;
     NSPoint delta;
+    NSPoint center;
+    static NSPoint last_pos = pos;
+    NSRect frame = self.window.frame;
+    
+    NSWindow *window = self.window;
+    NSRect windowFrame = window.frame;
+    NSPoint windowCenter = NSMakePoint(NSMidX(windowFrame), NSMidY(windowFrame));
+    NSScreen *screen = window.screen;
+    NSRect screenFrame = screen.frame;
+    NSPoint screenCenter = NSMakePoint(NSMidX(screenFrame), NSMidY(screenFrame));
 
+//    NSLog(@"Window Center: %@", NSStringFromPoint(windowCenter));
+//    NSLog(@"Screen Center: %@", NSStringFromPoint(screenCenter));
+    
+    
     //Origin is lower left, we get mouse messages outside of NSView bounds
     pos = [theEvent locationInWindow];
-    delta.x = [self bounds].size.width / 2 - pos.x;
-    delta.y = [self bounds].size.height / 2 - pos.y;
-    [altEngine mousepos: pos.x y: pos.y deltax: pos.x deltay: delta.y];
+//    center = [self convertPoint: center fromView: nil]
+
+    if (pos.x >= frame.size.width)
+    {
+        pos.x = frame.size.width - 1;
+    }
+
+    if (pos.y >= frame.size.height)
+    {
+        pos.y = frame.size.height - 1;
+    }
     
-    //center = [self convertPoint: center fromView: nil];
+    if (pos.x < 0)
+    {
+        pos.x = 0;
+    }
+
+    if (pos.y < 0)
+    {
+        pos.y = 0;
+    }
+    
+    
+    // flip so zero is upper left corner instead of lower left
+    pos.y = frame.size.height - pos.y - 1;
+    
+    
+    center.x = frame.origin.x + frame.size.width / 2;
+    center.y = frame.origin.y + frame.size.height / 2;
+    
+   
+    NSPoint screen_center = [window convertPointFromScreen:windowCenter];
+    
+    
+    delta.x = screen_center.x - pos.x;
+    delta.y = screen_center.y - pos.y;
+    
+
+    [altEngine mousepos: pos.x y: pos.y deltax: delta.x deltay: delta.y];
+    last_pos = pos;
+
+//    center = [self convertPoint: center fromView: nil];
     //CGWarpMouseCursorPosition(center);
 }
 
@@ -134,32 +185,32 @@ static void drawAnObject ()
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
-    [altEngine keypress: "mouse1" pressed:true];
+    [altEngine keypress: "leftbutton" pressed:true];
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-    [altEngine keypress: "mouse1" pressed:false];
+    [altEngine keypress: "leftbutton" pressed:false];
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
-    [altEngine keypress: "mouse2" pressed:true];
+    [altEngine keypress: "rightButton" pressed:true];
 }
 
 - (void)rightMouseUp:(NSEvent *)theEvent
 {
-    [altEngine keypress: "mouse2" pressed:false];
+    [altEngine keypress: "rightButton" pressed:false];
 }
 
 - (void)otherMouseDown:(NSEvent *)theEvent
 {
-    [altEngine keypress: "mouse3" pressed:true];
+    [altEngine keypress: "middleButton" pressed:true];
 }
 
 - (void)otherMouseUp:(NSEvent *)theEvent
 {
-    [altEngine keypress: "mouse3" pressed:false];
+    [altEngine keypress: "middleButton" pressed:false];
 }
 
 
