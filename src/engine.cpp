@@ -5688,11 +5688,8 @@ void Engine::resize(int width, int height)
 	gfx.CreateFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, 0, false);
 	gfx.CreateFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, 0, false);
 
-
-//#ifdef __APPLE__
-//    gfx.swap();
-//#endif
 #ifdef WIN32 // was originally ifdef, then changed to ifndef seems like a hack anyway, test this resize on menu
+    // mac does not need it
 #ifndef VULKAN
 	// This should probably be in render
 	if (initialized && q3map.loaded == false)

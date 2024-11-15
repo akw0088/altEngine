@@ -175,16 +175,18 @@ int serial_init(char *port, handle_t *handle)
 
 int serial_write(handle_t handle, char *data, int size)
 {
-    int fd = handle;
+//    int fd = handle;
 
-    return write(fd, data, size);
+//    return write(fd, data, size);
+    return 0;
 }
 
 int serial_read(handle_t handle, char *data, int size)
 {
-    int fd = handle;
+//    int fd = handle;
 
-    return read(fd, data, size);
+//    return read(fd, data, size);
+    return 0;
 }
 
 void serial_close(handle_t handle)
