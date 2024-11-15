@@ -624,31 +624,31 @@ void RaycastClear(raycast_result_t* outResult)
 
 bool Raycast(const sphere_t &sphere, const ray_t &ray, raycast_result_t *result)
 {
-	vec3 e = sphere.origin - ray.origin;
+	vec3 vec_to_sphere = sphere.origin - ray.origin;
 
 	RaycastClear(result);
-	float rSq = sphere.radius * sphere.radius;
-	float eSq = e.magnitudeSq();
+	float sphere_radius_squared = sphere.radius * sphere.radius;
+	float vec_to_sphere_squared = vec_to_sphere.magnitudeSq();
 
 	// ray.direction is assumed to be normalized
-	float a = e * ray.dir;
+	float a = vec_to_sphere* ray.dir;
 
-	float bSq = eSq - (a * a);
-	float f = newtonSqrt(rSq - bSq);
+	float b_squared = vec_to_sphere_squared - (a * a);
+	float f = newtonSqrt(sphere_radius_squared - b_squared);
 
 	float t = a - f; // Assume normal intersection!
 
-	// No collision has happened
-	if (rSq - (eSq - (a * a)) < 0.0f)
+	 // No collision has happened
+	if (sphere_radius_squared - (vec_to_sphere_squared - (a * a)) < 0.0f)
 	{
 		return false; // -1 is invalid.   
 	}
 	// Ray starts inside the sphere  
-	else if (eSq<rSq) 
+	else if (vec_to_sphere_squared < sphere_radius_squared)
 	{
-		t = a + f; 
+		t = a + f;
 		// Just reverse direction   
-	}   // else Normal intersection   
+	}
 
 	if (result != 0)
 	{
@@ -660,6 +660,7 @@ bool Raycast(const sphere_t &sphere, const ray_t &ray, raycast_result_t *result)
 
 	return true;
 }
+
 
 // really just rayboxslab in common.cpp I think
 bool Raycast(const aabb_t &aabb, const ray_t &ray, raycast_result_t *result)
