@@ -17,7 +17,7 @@
 
 #include "include.h"
 
-#include <math.h> // fpr sin/cos
+#include <math.h> // for sin/cos
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -979,6 +979,30 @@ matrix4 operator*(const float scalar, const matrix4 &mat)
 	result.m[13] = scalar * mat.m[7];
 	result.m[14] = scalar * mat.m[11];
 	result.m[15] = scalar * mat.m[15];
+
+	return result;
+}
+
+vec3 operator*(const vec3 v, const matrix3 &mat)
+{
+	vec4 result;
+
+	result.x = v.x * mat.m[0] + v.x * mat.m[1] + v.x * mat.m[2];
+	result.y = v.y * mat.m[3] + v.y * mat.m[4] + v.y * mat.m[5];
+	result.z = v.z * mat.m[6] + v.z * mat.m[7] + v.z * mat.m[8];
+
+	return result;
+}
+
+
+vec4 operator*(const vec4 v, const matrix4 &mat)
+{
+	vec4 result;
+
+	result.x = v.x * mat.m[0] + v.x * mat.m[1] + v.x * mat.m[2] + v.x * mat.m[3];
+	result.y = v.y * mat.m[4] + v.y * mat.m[5] + v.y * mat.m[6] + v.y * mat.m[7];
+	result.z = v.z * mat.m[8] + v.z * mat.m[9] + v.z * mat.m[10] + v.z * mat.m[11];
+	result.w = v.w * mat.m[12] + v.w * mat.m[13] + v.w * mat.m[14] + v.w * mat.m[15];
 
 	return result;
 }

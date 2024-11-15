@@ -21,8 +21,6 @@
 #endif
 
 
-
-
 #define red x
 #define green y
 #define blue z

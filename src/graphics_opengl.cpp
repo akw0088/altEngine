@@ -120,7 +120,7 @@ void Graphics::swap()
     // [[self openGLContext] flushBuffer];
     glSwapAPPLE();
 #endif
-    
+
 #ifdef ERROR_CHECK
 	error_check();
 #endif
@@ -999,7 +999,6 @@ void Graphics::bindFramebuffer(int fbo, int num_attach)
 int Graphics::checkFramebuffer()
 {
 	GLenum fboStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
-#ifndef MACOS
 #ifndef __APPLE__
 	if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -1033,7 +1032,6 @@ int Graphics::checkFramebuffer()
 		}
 		return -1;
 	}
-#endif
 #endif
 	return 0;
 }

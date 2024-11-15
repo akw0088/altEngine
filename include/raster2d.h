@@ -148,7 +148,7 @@ public:
 		int x, int y,
 		unsigned int *sprite, unsigned int sprite_width, unsigned int sprite_height,
 		int mode);
-		
+
 	// GDI functions to eventually make wrappers of
 	/*
 	Rectangle(hdc,

@@ -1415,9 +1415,15 @@ void Raster2D::draw_text(unsigned int *pixels, int width, int height, char *msg,
 
 				// bitmap is upside down, so invert Y
 				if (flip)
+				{
 					pixels[(x + i + x_shift) + (y + j) * width] |= ~tex[((255 - py) * 256) + px];
+//					pixels[(x + i + x_shift) + (y + j) * width] = tex[((255 - py) * 256) + px];
+				}
 				else
+				{
 					pixels[(x + i + x_shift) + (255 - (y + j)) * width] |= ~tex[((255 - py) * 256) + px];
+//					pixels[(x + i + x_shift) + (255 - (y + j)) * width] = tex[((255 - py) * 256) + px];
+				}
 
 			}
 		}
