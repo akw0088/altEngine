@@ -210,32 +210,32 @@ static void drawAnObject ()
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
-    [altEngine keypress: "leftbutton" pressed:true];
+    [altEngine keypress: (char *)"leftbutton" pressed:true];
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-    [altEngine keypress: "leftbutton" pressed:false];
+    [altEngine keypress: (char *)"leftbutton" pressed:false];
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
-    [altEngine keypress: "rightButton" pressed:true];
+    [altEngine keypress: (char *)"rightButton" pressed:true];
 }
 
 - (void)rightMouseUp:(NSEvent *)theEvent
 {
-    [altEngine keypress: "rightButton" pressed:false];
+    [altEngine keypress: (char *)"rightButton" pressed:false];
 }
 
 - (void)otherMouseDown:(NSEvent *)theEvent
 {
-    [altEngine keypress: "middleButton" pressed:true];
+    [altEngine keypress: (char *)"middleButton" pressed:true];
 }
 
 - (void)otherMouseUp:(NSEvent *)theEvent
 {
-    [altEngine keypress: "middleButton" pressed:false];
+    [altEngine keypress: (char *)"middleButton" pressed:false];
 }
 
 
@@ -244,56 +244,56 @@ static void drawAnObject ()
     switch (theEvent.keyCode)
     {
         case kVK_Return:
-            [altEngine keypress: "enter" pressed:true];
+            [altEngine keypress: (char *)"enter" pressed:true];
             [altEngine keystroke: '\r'];
             break;
         case kVK_Shift:
-            [altEngine keypress: "shift" pressed:true];
+            [altEngine keypress: (char *)"shift" pressed:true];
             break;
         case kVK_UpArrow:
-            [altEngine keypress: "up" pressed:true];
+            [altEngine keypress: (char *)"up" pressed:true];
             break;
         case kVK_DownArrow:
-            [altEngine keypress: "down" pressed:true];
+            [altEngine keypress: (char *)"down" pressed:true];
             break;
         case kVK_LeftArrow:
-            [altEngine keypress: "left" pressed:true];
+            [altEngine keypress: (char *)"left" pressed:true];
             break;
         case kVK_RightArrow:
-            [altEngine keypress: "right" pressed:true];
+            [altEngine keypress: (char *)"right" pressed:true];
             break;
         case kVK_ANSI_Keypad0:
-            [altEngine keypress: "num0" pressed:true];
+            [altEngine keypress: (char *)"num0" pressed:true];
             break;
         case kVK_ANSI_Keypad1:
-            [altEngine keypress: "num1" pressed:true];
+            [altEngine keypress: (char *)"num1" pressed:true];
             break;
         case kVK_ANSI_Keypad2:
-            [altEngine keypress: "num2" pressed:true];
+            [altEngine keypress: (char *)"num2" pressed:true];
             break;
         case kVK_ANSI_Keypad3:
-            [altEngine keypress: "num3" pressed:true];
+            [altEngine keypress: (char *)"num3" pressed:true];
             break;
         case kVK_ANSI_Keypad4:
-            [altEngine keypress: "num4" pressed:true];
+            [altEngine keypress: (char *)"num4" pressed:true];
             break;
         case kVK_ANSI_Keypad5:
-            [altEngine keypress: "num5" pressed:true];
+            [altEngine keypress: (char *)"num5" pressed:true];
             break;
         case kVK_ANSI_Keypad6:
-            [altEngine keypress: "num6" pressed:true];
+            [altEngine keypress: (char *)"num6" pressed:true];
             break;
         case kVK_ANSI_Keypad7:
-            [altEngine keypress: "num7" pressed:true];
+            [altEngine keypress: (char *)"num7" pressed:true];
             break;
         case kVK_ANSI_Keypad8:
-            [altEngine keypress: "num8" pressed:true];
+            [altEngine keypress: (char *)"num8" pressed:true];
             break;
         case kVK_ANSI_Keypad9:
-            [altEngine keypress: "num9" pressed:true];
+            [altEngine keypress: (char *)"num9" pressed:true];
             break;
         case kVK_ANSI_Grave:
-            [altEngine keypress: "~" pressed:true];
+            [altEngine keypress: (char *)"~" pressed:true];
             break;
         default:
             // ignore unsupported keys
@@ -309,55 +309,55 @@ static void drawAnObject ()
     switch (theEvent.keyCode)
     {
         case kVK_Return:
-            [altEngine keypress: "enter" pressed:false];
+            [altEngine keypress: (char *)"enter" pressed:false];
             break;
         case kVK_Shift:
-            [altEngine keypress: "shift" pressed:false];
+            [altEngine keypress: (char *)"shift" pressed:false];
             break;
         case kVK_UpArrow:
-            [altEngine keypress: "up" pressed:false];
+            [altEngine keypress: (char *)"up" pressed:false];
             break;
         case kVK_DownArrow:
-            [altEngine keypress: "down" pressed:false];
+            [altEngine keypress: (char *)"down" pressed:false];
             break;
         case kVK_LeftArrow:
-            [altEngine keypress: "left" pressed:false];
+            [altEngine keypress: (char *)"left" pressed:false];
             break;
         case kVK_RightArrow:
-            [altEngine keypress: "right" pressed:false];
+            [altEngine keypress: (char *)"right" pressed:false];
             break;
         case kVK_ANSI_Keypad0:
-            [altEngine keypress: "num0" pressed:false];
+            [altEngine keypress: (char *)"num0" pressed:false];
             break;
         case kVK_ANSI_Keypad1:
-            [altEngine keypress: "num1" pressed:false];
+            [altEngine keypress: (char *)"num1" pressed:false];
             break;
         case kVK_ANSI_Keypad2:
-            [altEngine keypress: "num2" pressed:false];
+            [altEngine keypress: (char *)"num2" pressed:false];
             break;
         case kVK_ANSI_Keypad3:
-            [altEngine keypress: "num3" pressed:false];
+            [altEngine keypress: (char *)"num3" pressed:false];
             break;
         case kVK_ANSI_Keypad4:
-            [altEngine keypress: "num4" pressed:false];
+            [altEngine keypress: (char *)"num4" pressed:false];
             break;
         case kVK_ANSI_Keypad5:
-            [altEngine keypress: "num5" pressed:false];
+            [altEngine keypress: (char *)"num5" pressed:false];
             break;
         case kVK_ANSI_Keypad6:
-            [altEngine keypress: "num6" pressed:false];
+            [altEngine keypress: (char *)"num6" pressed:false];
             break;
         case kVK_ANSI_Keypad7:
-            [altEngine keypress: "num7" pressed:false];
+            [altEngine keypress: (char *)"num7" pressed:false];
             break;
         case kVK_ANSI_Keypad8:
-            [altEngine keypress: "num8" pressed:false];
+            [altEngine keypress: (char *)"num8" pressed:false];
             break;
         case kVK_ANSI_Keypad9:
-            [altEngine keypress: "num9" pressed:false];
+            [altEngine keypress: (char *)"num9" pressed:false];
             break;
         case kVK_ANSI_Grave:
-            [altEngine keypress:  "~" pressed:false];
+            [altEngine keypress: (char *)"~" pressed:false];
             break;
         default:
             // ignore unsupported keys
@@ -377,22 +377,22 @@ static void drawAnObject ()
 
 -(IBAction)moveUp:(id)sender
 {
-    [altEngine keypress: "up" pressed:true];
+    [altEngine keypress: (char *)"up" pressed:true];
 }
 
 -(IBAction)moveDown:(id)sender
 {
-    [altEngine keypress: "down" pressed:true];
+    [altEngine keypress: (char *)"down" pressed:true];
 }
 
 -(IBAction)moveLeft:(id)sender
 {
-    [altEngine keypress: "left" pressed:true];
+    [altEngine keypress: (char *)"left" pressed:true];
 }
 
 -(IBAction)moveRight:(id)sender
 {
-    [altEngine keypress: "right" pressed:true];
+    [altEngine keypress: (char *)"right" pressed:true];
 }
 
 
