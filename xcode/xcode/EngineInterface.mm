@@ -50,9 +50,9 @@ unsigned int com_maxfps;
     altEngine->keystroke(key, NULL);
 }
 
-- (void)mousepos:(int)xpos y:(int)ypos deltax:(int)xd deltay:(int)yd;
+- (int)mousepos:(int)xpos y:(int)ypos deltax:(int)xd deltay:(int)yd;
 {
-    altEngine->mousepos(xpos, ypos, xd, yd);
+    return altEngine->mousepos(xpos, ypos, xd, yd);
 }
 
 

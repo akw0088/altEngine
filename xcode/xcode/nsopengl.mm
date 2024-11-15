@@ -1,8 +1,12 @@
 #import <Foundation/Foundation.h>
+#import <Cocoa/Cocoa.h>
+#import <CoreGraphics/CoreGraphics.h>
 
 #import "nsopengl.h"
 #include <OpenGL/gl.h>
 #include <Carbon/Carbon.h>
+
+
 
 #include "include.h"
 #import "EngineInterface.h"
@@ -48,37 +52,29 @@ static void drawAnObject ()
         [[self openGLContext] clearDrawable];
 }
 
+
+
+// NSWindow - entire window area, with title bar
+// NSScreen - This is the entire desktop area (monitor resolution)
+// NSView - This is the content area of a window
+// Frame -- a frame is just the rectangle defining the object
 - (void)mouseMoved:(NSEvent *)theEvent
 {
     NSPoint pos;
-    NSPoint delta;
-    NSPoint center;
-    static NSPoint last_pos = pos;
-    NSRect frame = self.window.frame;
-    
-    NSWindow *window = self.window;
-    NSRect windowFrame = window.frame;
-    NSPoint windowCenter = NSMakePoint(NSMidX(windowFrame), NSMidY(windowFrame));
-    NSScreen *screen = window.screen;
-    NSRect screenFrame = screen.frame;
-    NSPoint screenCenter = NSMakePoint(NSMidX(screenFrame), NSMidY(screenFrame));
-
-//    NSLog(@"Window Center: %@", NSStringFromPoint(windowCenter));
-//    NSLog(@"Screen Center: %@", NSStringFromPoint(screenCenter));
-    
-    
+   
     //Origin is lower left, we get mouse messages outside of NSView bounds
     pos = [theEvent locationInWindow];
-//    center = [self convertPoint: center fromView: nil]
 
-    if (pos.x >= frame.size.width)
+    
+    // clamp pos to view bounds
+    if (pos.x >= self.window.contentView.frame.size.width)
     {
-        pos.x = frame.size.width - 1;
+        pos.x = self.window.contentView.frame.size.width - 1;
     }
 
-    if (pos.y >= frame.size.height)
+    if (pos.y >= self.window.contentView.frame.size.height)
     {
-        pos.y = frame.size.height - 1;
+        pos.y = self.window.contentView.frame.size.height - 1;
     }
     
     if (pos.x < 0)
@@ -93,25 +89,45 @@ static void drawAnObject ()
     
     
     // flip so zero is upper left corner instead of lower left
-    pos.y = frame.size.height - pos.y - 1;
-    
-    
-    center.x = frame.origin.x + frame.size.width / 2;
-    center.y = frame.origin.y + frame.size.height / 2;
-    
-   
-    NSPoint screen_center = [window convertPointFromScreen:windowCenter];
-    
-    
-    delta.x = screen_center.x - pos.x;
-    delta.y = screen_center.y - pos.y;
-    
+    pos.y = self.window.contentView.frame.size.height - pos.y - 1;
 
-    [altEngine mousepos: pos.x y: pos.y deltax: delta.x deltay: delta.y];
-    last_pos = pos;
+    // get center of window
+    NSPoint window_center_screen = NSMakePoint(NSMidX(self.window.frame), NSMidY(self.window.frame));
+    NSPoint window_center = [self.window convertPointFromScreen:window_center_screen];
+    
+    
+    NSPoint delta;
+    
+    // calculate delta from window center
+    delta.x = pos.x - window_center.x;
+    delta.y = pos.y - window_center.y;
+    
+//    NSLog(@"Pos: %@", NSStringFromPoint(pos));
+//    NSLog(@"Delta: %@", NSStringFromPoint(delta));
 
-//    center = [self convertPoint: center fromView: nil];
-    //CGWarpMouseCursorPosition(center);
+    int flag = [altEngine mousepos: pos.x y: pos.y deltax: delta.x deltay: delta.y];
+    
+    if (flag)
+    {
+        NSPoint center;
+        
+        center.x = self.window.frame.origin.x + self.window.frame.size.width  / 2;
+        center.y = (self.window.screen.frame.size.height - 1) - (self.window.frame.origin.y + self.window.frame.size.height  / 2);
+        
+        
+        //Cocoa uses a coordinate space where the origin (0, 0) is the bottom-left of the primary display and increasing y goes up.
+        
+        //Quartz uses a coordinate space where the origin (0, 0) is at the top-left of the primary display. Increasing y goes down.
+        
+        // CG uses Quartz
+        CGWarpMouseCursorPosition(center);
+        CGDisplayHideCursor(kCGDirectMainDisplay);
+    }
+    else
+    {
+        CGDisplayShowCursor(kCGDirectMainDisplay);
+    }
+
 }
 
 - (void)awakeFromNib
@@ -138,18 +154,29 @@ static void drawAnObject ()
     
     id ret = [altEngine init]; // gets pointer to implementation (pimpl)
     
+    
+//    NSOpenGLContext    *currentContext = [self openGLContext];
+  
+    
+        
     [altEngine engine_init];
     
-    NSTimer *timer;
+    NSTimer *timer_step;
+    NSTimer *timer_render;
     
     //create 16ms timer for time step
-    timer = [NSTimer scheduledTimerWithTimeInterval:0.016
+    timer_step = [NSTimer scheduledTimerWithTimeInterval:0.008
                      target:self
                      selector:@selector(step)
                      userInfo:nil
                      repeats:YES];
     
     // still need proper render loop
+    timer_render = [NSTimer scheduledTimerWithTimeInterval:0.001
+                     target:self
+                     selector:@selector(render)
+                     userInfo:nil
+                     repeats:YES];
 }
 
 -(BOOL) acceptsFirstResponder
@@ -160,14 +187,12 @@ static void drawAnObject ()
 -(void) render
 {
     [altEngine render];
-    [[self openGLContext] flushBuffer];
+//    [[self openGLContext] flushBuffer];
 }
 
 -(void) step
 {
     [altEngine step];
-    [altEngine render];
-    [[self openGLContext] flushBuffer];
 }
 
 
@@ -267,7 +292,9 @@ static void drawAnObject ()
         case kVK_ANSI_Keypad9:
             [altEngine keypress: "num9" pressed:true];
             break;
-            
+        case kVK_ANSI_Grave:
+            [altEngine keypress: "~" pressed:true];
+            break;
         default:
             // ignore unsupported keys
             break;
@@ -329,7 +356,9 @@ static void drawAnObject ()
         case kVK_ANSI_Keypad9:
             [altEngine keypress: "num9" pressed:false];
             break;
-            
+        case kVK_ANSI_Grave:
+            [altEngine keypress:  "~" pressed:false];
+            break;
         default:
             // ignore unsupported keys
             break;

@@ -115,8 +115,10 @@ void Graphics::swap()
 	glXSwapBuffers(display, window);
 #endif
 #ifdef __APPLE__
-    glFlush();
-    glFinish();
+    // swap is external in MaxOS, see NSOpengl.mm
+    // Uses objective-c, so a different language
+    // [[self openGLContext] flushBuffer];
+    glSwapAPPLE();
 #endif
     
 #ifdef ERROR_CHECK

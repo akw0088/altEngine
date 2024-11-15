@@ -10,14 +10,14 @@
     Engine *altEngine;
 }
 - (id) init;
-- (void) dealloc;
+- (void)dealloc;
 - (void)engine_init;
 - (void)step;
 - (void)render;
 - (void)resize:(int)x height:(int)y;
 - (void)keypress:(char *)key pressed:(bool)press;
 - (void)keystroke:(char)key;
-- (void)mousepos:(int)xpos y:(int)ypos deltax:(int)xd deltay:(int)yd;
+- (int)mousepos:(int)xpos y:(int)ypos deltax:(int)xd deltay:(int)yd;
 
 @end
 
